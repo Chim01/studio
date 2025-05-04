@@ -2,102 +2,105 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { usePathname } from "next/navigation" // Import usePathname
 
 import { cn } from "@/lib/utils"
 import {
   NavigationMenu,
-  NavigationMenuContent,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  NavigationMenuTrigger,
   navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu"
+} from "@/components/ui/navigation-menu" // Correct import path
+import type { MainNavItem } from "@/config/site" // Import type if needed
+
 
 interface MainNavProps extends React.HTMLAttributes<HTMLElement> {
-  items?: {
-    title: string
-    href: string
-    description?: string
-  }[]
+  items?: MainNavItem[] // Use MainNavItem type
 }
 
 export function MainNav({ items }: MainNavProps) {
-  const [isAdmin, setIsAdmin] = React.useState(false);
+  const pathname = usePathname(); // Get current path
+  const [isAdmin, setIsAdmin] = React.useState(false); // Keep admin logic if needed
 
   React.useEffect(() => {
-    // TODO: Check user role to determine if admin
-    // This is a placeholder and would need to be replaced with actual auth logic
+    // TODO: Replace with actual authentication and role checking logic
+    // For now, assume user is admin for demonstration
     setIsAdmin(true);
   }, []);
 
   return (
     <div className="flex gap-6 md:gap-10">
-      <Link href="/" className="flex items-center space-x-2">
-        <p className="hidden font-bold sm:inline-block">Campus Cruiser</p>
+      <Link href="/" className="flex items-center space-x-2 mr-6"> {/* Added margin */}
+         {/* Consider adding a Logo component here */}
+        <span className="font-bold sm:inline-block text-lg">Campus Cruiser</span>
       </Link>
-      {/* Check if the user is an admin */}
-      {isAdmin && (
+
       <NavigationMenu>
         <NavigationMenuList>
-          <NavigationMenuItem>
-            <Link href="/admin" legacyBehavior passHref>
-              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                Admin
-              </NavigationMenuLink>
-            </Link>
-          </NavigationMenuItem>
+           {/* Admin Link - Render conditionally based on role */}
+           {isAdmin && (
+             <NavigationMenuItem>
+               <Link href="/admin" legacyBehavior passHref>
+                 <NavigationMenuLink
+                   className={cn(
+                     navigationMenuTriggerStyle(),
+                     pathname === "/admin" ? "bg-accent text-accent-foreground" : "" // Active state styling
+                   )}
+                 >
+                   Admin Dashboard
+                 </NavigationMenuLink>
+               </Link>
+             </NavigationMenuItem>
+           )}
+
+          {/* Main Navigation Items */}
+          {items?.length ? (
+              items.map((item) => (
+                <NavigationMenuItem key={item.href}>
+                  <Link href={item.href} legacyBehavior passHref>
+                    <NavigationMenuLink
+                      className={cn(
+                        navigationMenuTriggerStyle(),
+                        pathname === item.href ? "bg-accent text-accent-foreground" : "" // Active state styling
+                      )}
+                    >
+                      {item.title}
+                    </NavigationMenuLink>
+                  </Link>
+                </NavigationMenuItem>
+              ))
+          ) : null}
+
         </NavigationMenuList>
       </NavigationMenu>
-      )}
-      {items?.length ? (
-        <NavigationMenu>
-          <NavigationMenuList>
-            {items?.map((item) => {
-              return (
-                <NavigationMenuItem key={item.title}>
-                  <NavigationMenuTrigger>{item.title}</NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                      {items?.map((item) => (
-                        <ListItem key={item.title} title={item.title} href={item.href}>
-                          {item.description}
-                        </ListItem>
-                      ))}
-                    </ul>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
-              )
-            })}
-          </NavigationMenuList>
-        </NavigationMenu>
-      ) : null}
     </div>
   )
 }
 
-const ListItem = React.forwardRef<
-  React.ElementRef<"a">,
-  React.ComponentPropsWithoutRef<"a">
->(({ className, title, children, ...props }, ref) => {
-  return (
-    <li>
-      <NavigationMenuLink asChild>
-        <a
-          ref={ref}
-          className={cn(
-            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-            className
-          )}
-          {...props}
-        >
-          <div className="text-sm font-medium leading-none">{title}</div>
-          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-            {children}
-          </p>
-        </a>
-      </NavigationMenuLink>
-    </li>
-  )
-})
-ListItem.displayName = "ListItem"
+// ListItem component might not be needed if not using dropdowns, but keep it if planned for future use.
+// const ListItem = React.forwardRef<
+//   React.ElementRef<"a">,
+//   React.ComponentPropsWithoutRef<"a">
+// >(({ className, title, children, ...props }, ref) => {
+//   return (
+//     <li>
+//       <NavigationMenuLink asChild>
+//         <a
+//           ref={ref}
+//           className={cn(
+//             "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+//             className
+//           )}
+//           {...props}
+//         >
+//           <div className="text-sm font-medium leading-none">{title}</div>
+//           <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+//             {children}
+//           </p>
+//         </a>
+//       </NavigationMenuLink>
+//     </li>
+//   )
+// })
+// ListItem.displayName = "ListItem"
