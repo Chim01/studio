@@ -6,6 +6,9 @@ export type SiteConfig = {
   links: {
     twitter: string
     github: string
+    whatsapp?: string // Added optional whatsapp link
+    instagram?: string // Added optional instagram link
+    x?: string // Added optional x link
   }
   mainNav: MainNavItem[]
 }
@@ -25,8 +28,12 @@ export const siteConfig: SiteConfig = {
   links: {
     twitter: "https://twitter.com/shadcn", // Update with relevant links
     github: "https://github.com/shadcn/ui", // Update with relevant links
+    whatsapp: "#", // Placeholder link
+    instagram: "#", // Placeholder link
+    x: "https://twitter.com/shadcn", // Placeholder link (can be same as twitter initially)
   },
   mainNav: [
+     // Removed Admin Dashboard link
     {
       title: "Booking",
       href: "/booking",
