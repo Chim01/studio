@@ -12,43 +12,43 @@ import { useToast } from "@/hooks/use-toast";
 import { CalendarIcon } from "lucide-react";
 
 const nigerianLocations = [
-  "Abia State", "Umuahia", "Abia State University",
-  "Adamawa State", "Yola", "American University of Nigeria",
-  "Akwa Ibom State", "Uyo", "University of Uyo",
-  "Anambra State", "Awka", "Nnamdi Azikiwe University",
-  "Bauchi State", "Bauchi", "Abubakar Tafawa Balewa University",
-  "Bayelsa State", "Yenagoa", "Niger Delta University",
-  "Benue State", "Makurdi", "Benue State University",
-  "Borno State", "Maiduguri", "University of Maiduguri",
-  "Cross River State", "Calabar", "University of Calabar",
-  "Delta State", "Asaba", "Delta State University",
-  "Ebonyi State", "Abakaliki", "Ebonyi State University",
-  "Edo State", "Benin City", "University of Benin",
-  "Ekiti State", "Ado Ekiti", "Ekiti State University",
-  "Enugu State", "Enugu", "University of Nigeria, Enugu Campus",
-  "Gombe State", "Gombe", "Gombe State University",
-  "Imo State", "Owerri", "Federal University of Technology Owerri",
-  "Jigawa State", "Dutse", "Federal University Dutse",
-  "Kaduna State", "Kaduna", "Ahmadu Bello University",
-  "Kano State", "Kano", "Bayero University Kano",
-  "Katsina State", "Katsina", "Federal University Katsina",
-  "Kebbi State", "Birnin Kebbi", "Federal University Birnin Kebbi",
-  "Kogi State", "Lokoja", "Kogi State University",
-  "Kwara State", "Ilorin", "University of Ilorin",
-  "Lagos State", "Ikeja", "University of Lagos",
-  "Nasarawa State", "Lafia", "Nasarawa State University",
-  "Niger State", "Minna", "Federal University of Technology Minna",
-  "Ogun State", "Abeokuta", "Federal University of Agriculture Abeokuta",
-  "Ondo State", "Akure", "Federal University of Technology Akure",
-  "Osun State", "Osogbo", "Obafemi Awolowo University",
-  "Oyo State", "Ibadan", "University of Ibadan",
-  "Plateau State", "Jos", "University of Jos",
-  "Rivers State", "Port Harcourt", "University of Port Harcourt",
-  "Sokoto State", "Sokoto", "Usmanu Danfodiyo University",
-  "Taraba State", "Jalingo", "Taraba State University",
-  "Yobe State", "Damaturu", "Yobe State University",
-  "Zamfara State", "Gusau", "Federal University Gusau",
-  "Abuja", "Federal Capital Territory",
+  "Abia State", "Umuahia, Abia State", "Abia State University",
+  "Adamawa State", "Yola, Adamawa State", "American University of Nigeria",
+  "Akwa Ibom State", "Uyo, Akwa Ibom State", "University of Uyo",
+  "Anambra State", "Awka, Anambra State", "Nnamdi Azikiwe University",
+  "Bauchi State", "Bauchi, Bauchi State", "Abubakar Tafawa Balewa University",
+  "Bayelsa State", "Yenagoa, Bayelsa State", "Niger Delta University",
+  "Benue State", "Makurdi, Benue State", "Benue State University",
+  "Borno State", "Maiduguri, Borno State", "University of Maiduguri",
+  "Cross River State", "Calabar, Cross River State", "University of Calabar",
+  "Delta State", "Asaba, Delta State", "Delta State University",
+  "Ebonyi State", "Abakaliki, Ebonyi State", "Ebonyi State University",
+  "Edo State", "Benin City, Edo State", "University of Benin",
+  "Ekiti State", "Ado Ekiti, Ekiti State", "Ekiti State University",
+  "Enugu State", "Enugu, Enugu State", "University of Nigeria, Enugu Campus",
+  "Gombe State", "Gombe, Gombe State", "Gombe State University",
+  "Imo State", "Owerri, Imo State", "Federal University of Technology Owerri",
+  "Jigawa State", "Dutse, Jigawa State", "Federal University Dutse",
+  "Kaduna State", "Kaduna, Kaduna State", "Ahmadu Bello University",
+  "Kano State", "Kano, Kano State", "Bayero University Kano",
+  "Katsina State", "Katsina, Katsina State", "Federal University Katsina",
+  "Kebbi State", "Birnin Kebbi, Kebbi State", "Federal University Birnin Kebbi",
+  "Kogi State", "Lokoja, Kogi State", "Kogi State University",
+  "Kwara State", "Ilorin, Kwara State", "University of Ilorin",
+  "Lagos State", "Ikeja, Lagos State", "University of Lagos",
+  "Nasarawa State", "Lafia, Nasarawa State", "Nasarawa State University",
+  "Niger State", "Minna, Niger State", "Federal University of Technology Minna",
+  "Ogun State", "Abeokuta, Ogun State", "Federal University of Agriculture Abeokuta",
+  "Ondo State", "Akure, Ondo State", "Federal University of Technology Akure",
+  "Osun State", "Osogbo, Osun State", "Obafemi Awolowo University",
+  "Oyo State", "Ibadan, Oyo State", "University of Ibadan",
+  "Plateau State", "Jos, Plateau State", "University of Jos",
+  "Rivers State", "Port Harcourt, Rivers State", "University of Port Harcourt",
+  "Sokoto State", "Sokoto, Sokoto State", "Usmanu Danfodiyo University",
+  "Taraba State", "Jalingo, Taraba State", "Taraba State University",
+  "Yobe State", "Damaturu, Yobe State", "Yobe State University",
+  "Zamfara State", "Gusau, Zamfara State", "Federal University Gusau",
+  "Abuja, Federal Capital Territory",
   "Lagos", "Ibadan", "Kano", "Port Harcourt", "Benin City",
   "Onitsha", "Aba", "Warri", "Kaduna", "Enugu",
 ];
@@ -91,8 +91,8 @@ const BookingPage = () => {
             <Label htmlFor="origin">Origin</Label>
             <Input id="origin" list="origin-list" value={origin} onChange={(e) => setOrigin(e.target.value)} />
             <datalist id="origin-list">
-              {nigerianLocations.map((location) => (
-                <option key={location} value={location} />
+              {nigerianLocations.map((location, index) => (
+                <option key={`${location}-${index}`} value={location} />
               ))}
             </datalist>
           </div>
@@ -100,8 +100,8 @@ const BookingPage = () => {
             <Label htmlFor="destination">Destination</Label>
             <Input id="destination" list="destination-list" value={destination} onChange={(e) => setDestination(e.target.value)} />
             <datalist id="destination-list">
-              {nigerianLocations.map((location) => (
-                <option key={location} value={location} />
+              {nigerianLocations.map((location, index) => (
+                <option key={`${location}-${index}`} value={location} />
               ))}
             </datalist>
           </div>
