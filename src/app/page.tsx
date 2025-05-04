@@ -4,8 +4,22 @@ import Image from 'next/image';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, MapPin, Smartphone, ShieldCheck } from "lucide-react";
+import {ai} from '@/ai/ai-instance';
 
-export default function Home() {
+async function generateHeroImage() {
+  const {media} = await ai.generate({
+    model: 'googleai/gemini-2.0-flash-exp',
+    prompt: 'Generate an image of an electric campus vehicle',
+    config: {
+      responseModalities: ['TEXT', 'IMAGE'],
+    },
+  });
+  return media.url;
+}
+
+export default async function Home() {
+  const heroImageUrl = await generateHeroImage();
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-128px)] py-12 px-4 md:px-8">
       {/* Hero Section */}
@@ -21,16 +35,22 @@ export default function Home() {
         </Link>
       </section>
 
-      {/* Placeholder Image */}
+      {/* Genkit Generated Image */}
       <section className="mb-16 w-full max-w-4xl">
-         <Image
-            src="https://picsum.photos/1024/400"
-            alt="Campus transportation illustration"
+        {heroImageUrl ? (
+          <Image
+            src={heroImageUrl}
+            alt="Electric campus vehicle"
             width={1024}
             height={400}
             className="rounded-lg shadow-md object-cover w-full"
-            data-ai-hint="campus transport electric vehicle"
           />
+        ) : (
+          <p>Generating image...</p>
+        )}
+        <p className="text-sm text-muted-foreground mt-2">
+          AI-generated image of an electric campus vehicle.
+        </p>
       </section>
 
       {/* How it Works Section */}
