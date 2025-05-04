@@ -22,13 +22,6 @@ interface MainNavProps extends React.HTMLAttributes<HTMLElement> {
 
 export function MainNav({ items }: MainNavProps) {
   const pathname = usePathname(); // Get current path
-  const [isAdmin, setIsAdmin] = React.useState(false); // Keep admin logic if needed
-
-  React.useEffect(() => {
-    // TODO: Replace with actual authentication and role checking logic
-    // For now, assume user is admin for demonstration
-    setIsAdmin(true);
-  }, []);
 
   return (
     <div className="flex gap-6 md:gap-10">
@@ -39,22 +32,6 @@ export function MainNav({ items }: MainNavProps) {
 
       <NavigationMenu>
         <NavigationMenuList>
-           {/* Admin Link - Render conditionally based on role */}
-           {isAdmin && (
-             <NavigationMenuItem>
-               <Link href="/admin" legacyBehavior passHref>
-                 <NavigationMenuLink
-                   className={cn(
-                     navigationMenuTriggerStyle(),
-                     pathname === "/admin" ? "bg-accent text-accent-foreground" : "" // Active state styling
-                   )}
-                 >
-                   Admin Dashboard
-                 </NavigationMenuLink>
-               </Link>
-             </NavigationMenuItem>
-           )}
-
           {/* Main Navigation Items */}
           {items?.length ? (
               items.map((item) => (
