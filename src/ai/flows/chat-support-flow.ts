@@ -1,6 +1,6 @@
 'use server';
 /**
- * @fileOverview Basic chat support AI flow for Campus Cruiser.
+ * @fileOverview Basic chat support AI flow for TecoTransit.
  *
  * - chatSupport - Handles generating responses for chat support.
  * - ChatSupportInput - Input type for the chatSupport function.
@@ -34,7 +34,7 @@ const supportPrompt = ai.definePrompt(
     name: 'chatSupportPrompt',
     input: { schema: ChatSupportInputSchema },
     output: { schema: ChatSupportOutputSchema },
-    prompt: `You are a friendly and helpful support agent for "Campus Cruiser", a campus ride-booking app.
+    prompt: `You are a friendly and helpful support agent for "TecoTransit", a campus ride-booking app.
     Your goal is to assist users with their questions about the service.
     Be concise and helpful. If you don't know the answer, politely say so.
 

@@ -17,7 +17,7 @@ export type MainNavItem = {
 }
 
 export const siteConfig: SiteConfig = {
-  name: "Campus Cruiser",
+  name: "TecoTransit",
   description:
     "An open source platform for ride booking",
   url: "https://localhost:3000", // Consider updating this if deployed

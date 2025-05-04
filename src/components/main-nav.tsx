@@ -31,9 +31,9 @@ export function MainNav({ items }: MainNavProps) {
 
   return (
     <div className="flex gap-6 md:gap-10">
-      <Link href="/" className="flex items-center space-x-2 mr-6"> {/* Added margin */}
+      <Link href="/" className="flex items-center space-x-2 mr-10"> {/* Increased margin */}
          {/* Consider adding a Logo component here */}
-        <span className="font-bold sm:inline-block text-lg">Campus Cruiser</span>
+        <span className="font-bold sm:inline-block text-lg">TecoTransit</span>
       </Link>
 
       <NavigationMenu>
