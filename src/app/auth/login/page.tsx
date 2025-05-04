@@ -29,9 +29,19 @@ const LoginPage = () => {
     } catch (error) {
       const authError = error as AuthError;
       console.error('Google Sign-In Failed:', authError);
+
+      let description = "An error occurred during Google Sign-In.";
+      if (authError.code === 'auth/cancelled-popup-request' || authError.code === 'auth/popup-closed-by-user') {
+        description = "Sign-in cancelled. Please try again.";
+      } else if (authError.code === 'auth/api-key-not-valid.-please-pass-a-valid-api-key.') {
+        description = "Invalid API Key configuration. Please contact support.";
+      } else if (authError.message) {
+        description = authError.message;
+      }
+
       toast({
         title: "Google Sign-In Failed",
-        description: authError.message || "An error occurred during Google Sign-In.",
+        description: description,
         variant: "destructive",
       });
     }
