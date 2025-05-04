@@ -17,7 +17,7 @@ export function SiteFooter({ className, ...props }: SiteFooterProps) {
     <footer className={cn("border-t bg-background", className)} {...props}>
       <div className="container flex flex-col items-center justify-center gap-4 py-6 md:flex-row md:justify-between">
         {/* Copyright */}
-        <span className="text-sm text-muted-foreground text-center md:order-1 ml-1"> {/* Added ml-1 */}
+        <span className="text-sm text-foreground text-center md:order-1 ml-4"> {/* Updated margin-left and text color */}
           {siteConfig.name} © {currentYear}
         </span>
 
