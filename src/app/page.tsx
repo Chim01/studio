@@ -2,7 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, MapPin, Smartphone, ShieldCheck, Zap } from "lucide-react"; // Added Zap icon
+import { CheckCircle, MapPin, Smartphone, ShieldCheck, Zap, Leaf } from "lucide-react"; // Added Zap and Leaf icons
 
 export default async function Home() {
 
@@ -69,27 +69,32 @@ export default async function Home() {
       </section>
 
       {/* Why Choose Us Section */}
-      <section className="w-full max-w-4xl mb-12 bg-secondary py-12 rounded-lg">
+      <section className="w-full max-w-5xl mb-12"> {/* Increased max-w for grid */}
         <h2 className="text-3xl font-semibold text-center mb-8 text-secondary-foreground">Why Choose TecoTransit?</h2>
-        <ul className="space-y-6 text-lg text-muted-foreground max-w-2xl mx-auto px-4">
-          <li className="flex items-start">
-            <ShieldCheck className="w-8 h-8 text-primary mr-4 mt-1 flex-shrink-0" />
-            <span><span className="font-semibold text-foreground">Safety First:</span> We prioritize your safety with trained drivers, well-maintained vehicles, and monitored rides.</span>
-          </li>
-          <li className="flex items-start">
-            <CheckCircle className="w-8 h-8 text-primary mr-4 mt-1 flex-shrink-0" />
-            <span><span className="font-semibold text-foreground">Always On Time:</span> Our efficient routing and scheduling means you get to your destination reliably and quickly.</span>
-          </li>
-           <li className="flex items-start">
-            <MapPin className="w-8 h-8 text-primary mr-4 mt-1 flex-shrink-0" />
-            <span><span className="font-semibold text-foreground">Campus-Wide Coverage:</span> Reach any point on campus with ease, from dorms to lecture halls and facilities.</span>
-          </li>
-           <li className="flex items-start">
-             {/* Placeholder for an eco-friendly icon */}
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary mr-4 mt-1 flex-shrink-0"><path d="M12 22c-3.3 0-6-2.7-6-6v-4c0-3.3 2.7-6 6-6s6 2.7 6 6v4c0 3.3-2.7 6-6 6z"/><path d="M12 10a2 2 0 00-2 2v4a2 2 0 002 2h0a2 2 0 002-2v-4a2 2 0 00-2-2z"/><path d="M7 10a5 5 0 015-5h0a5 5 0 015 5v4a5 5 0 01-5 5h0a5 5 0 01-5-5z"/></svg> {/* Simple Leaf Icon */}
-            <span><span className="font-semibold text-foreground">Eco-Friendly Option:</span> Choose our electric vehicles for a greener way to travel around campus.</span>
-          </li>
-        </ul>
+        {/* Changed ul to div and applied grid classes */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-lg text-muted-foreground max-w-5xl mx-auto px-4">
+          {/* Each item is now a Card */}
+          <Card className="bg-secondary flex flex-col items-center p-6 text-center">
+            <ShieldCheck className="w-12 h-12 text-primary mb-4 flex-shrink-0" />
+            <h3 className="font-semibold text-foreground mb-2 text-xl">Safety First</h3>
+            <p className="text-sm">We prioritize your safety with trained drivers, well-maintained vehicles, and monitored rides.</p>
+          </Card>
+          <Card className="bg-secondary flex flex-col items-center p-6 text-center">
+            <CheckCircle className="w-12 h-12 text-primary mb-4 flex-shrink-0" />
+            <h3 className="font-semibold text-foreground mb-2 text-xl">Always On Time</h3>
+            <p className="text-sm">Our efficient routing and scheduling means you get to your destination reliably and quickly.</p>
+          </Card>
+           <Card className="bg-secondary flex flex-col items-center p-6 text-center">
+            <MapPin className="w-12 h-12 text-primary mb-4 flex-shrink-0" />
+            <h3 className="font-semibold text-foreground mb-2 text-xl">Campus-Wide</h3>
+            <p className="text-sm">Reach any point on campus with ease, from dorms to lecture halls and facilities.</p>
+          </Card>
+           <Card className="bg-secondary flex flex-col items-center p-6 text-center">
+            <Leaf className="w-12 h-12 text-primary mb-4 flex-shrink-0"/>
+            <h3 className="font-semibold text-foreground mb-2 text-xl">Eco-Friendly</h3>
+            <p className="text-sm">Choose our electric vehicles for a greener way to travel around campus.</p>
+          </Card>
+        </div>
       </section>
 
        {/* Testimonials Section (Example) */}
