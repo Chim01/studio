@@ -1,28 +1,43 @@
+// src/app/auth/login/page.tsx
 "use client";
 
 import React from 'react';
+import { useRouter } from 'next/navigation'; // Import useRouter
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator"; // Import Separator
-import { GoogleIcon } from '@/components/icons/google-icon'; // Import GoogleIcon
-import { useToast } from "@/hooks/use-toast"; // Import useToast
+import { Separator } from "@/components/ui/separator";
+import { GoogleIcon } from '@/components/icons/google-icon';
+import { useToast } from "@/hooks/use-toast";
+import { signInWithGoogle } from '@/services/auth'; // Import the auth service
+import type { AuthError } from 'firebase/auth'; // Import AuthError type
 
 const LoginPage = () => {
-  const { toast } = useToast(); // Use the toast hook
+  const { toast } = useToast();
+  const router = useRouter(); // Initialize router
 
-  const handleGoogleSignIn = () => {
-    // TODO: Implement Firebase Google Sign-In logic
-    console.log('Attempting Google Sign-In...');
-    toast({
-      title: "Google Sign-In",
-      description: "Google Sign-In functionality not yet implemented.",
-      variant: "destructive", // Use destructive variant for unimplemented features
-    });
+  const handleGoogleSignIn = async () => {
+    try {
+      console.log('Attempting Google Sign-In...');
+      const userCredential = await signInWithGoogle();
+      toast({
+        title: "Login Successful",
+        description: `Welcome back, ${userCredential.user.displayName}!`,
+      });
+      router.push('/profile'); // Redirect to profile page on successful login
+    } catch (error) {
+      const authError = error as AuthError;
+      console.error('Google Sign-In Failed:', authError);
+      toast({
+        title: "Google Sign-In Failed",
+        description: authError.message || "An error occurred during Google Sign-In.",
+        variant: "destructive",
+      });
+    }
   };
 
-   const handleEmailLogin = () => {
+  const handleEmailLogin = () => {
     // TODO: Implement Firebase Email/Password Login logic
     console.log('Attempting Email Login...');
     toast({

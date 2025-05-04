@@ -1,25 +1,41 @@
+// src/app/auth/signup/page.tsx
 "use client";
 
 import React from 'react';
+import { useRouter } from 'next/navigation'; // Import useRouter
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator"; // Import Separator
-import { GoogleIcon } from '@/components/icons/google-icon'; // Import GoogleIcon
-import { useToast } from "@/hooks/use-toast"; // Import useToast
+import { Separator } from "@/components/ui/separator";
+import { GoogleIcon } from '@/components/icons/google-icon';
+import { useToast } from "@/hooks/use-toast";
+import { signInWithGoogle } from '@/services/auth'; // Import the auth service
+import type { AuthError } from 'firebase/auth'; // Import AuthError type
+
 
 const SignupPage = () => {
-   const { toast } = useToast(); // Use the toast hook
+   const { toast } = useToast();
+   const router = useRouter(); // Initialize router
 
-  const handleGoogleSignUp = () => {
-    // TODO: Implement Firebase Google Sign-Up logic
-    console.log('Attempting Google Sign-Up...');
-     toast({
-      title: "Google Sign-Up",
-      description: "Google Sign-Up functionality not yet implemented.",
-      variant: "destructive",
-    });
+  const handleGoogleSignUp = async () => {
+    try {
+      console.log('Attempting Google Sign-Up...');
+      const userCredential = await signInWithGoogle(); // Use the same function for signup/login
+      toast({
+        title: "Sign Up Successful",
+        description: `Welcome, ${userCredential.user.displayName}!`,
+      });
+      router.push('/profile'); // Redirect to profile page on successful signup
+    } catch (error) {
+      const authError = error as AuthError;
+      console.error('Google Sign-Up Failed:', authError);
+      toast({
+        title: "Google Sign-Up Failed",
+        description: authError.message || "An error occurred during Google Sign-Up.",
+        variant: "destructive",
+      });
+    }
   };
 
    const handleEmailSignUp = () => {
