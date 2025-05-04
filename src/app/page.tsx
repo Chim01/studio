@@ -1,16 +1,10 @@
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, MapPin, Smartphone, ShieldCheck } from "lucide-react";
-
-// Removed the slow AI image generation function
-// async function generateHeroImage() { ... }
+import { CheckCircle, MapPin, Smartphone, ShieldCheck, Zap } from "lucide-react"; // Added Zap icon
 
 export default async function Home() {
-  // Use a placeholder image URL instead of generating one on every load
-  const heroImageUrl = "https://picsum.photos/1024/400"; // Placeholder image
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-128px)] py-12 px-4 md:px-8">
@@ -27,20 +21,18 @@ export default async function Home() {
         </Link>
       </section>
 
-      {/* Static Placeholder Image */}
-      <section className="mb-16 w-full max-w-4xl">
-        <Image
-          src={heroImageUrl}
-          alt="Electric campus vehicle placeholder"
-          width={1024}
-          height={400}
-          className="rounded-lg shadow-md object-cover w-full"
-          data-ai-hint="electric campus vehicle futuristic" // Hint for future replacement
-        />
-        <p className="text-sm text-muted-foreground mt-2 text-center">
-          Reliable and efficient campus transportation.
+      {/* Creative Text Section */}
+      <section className="mb-16 w-full max-w-4xl text-center bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 py-12 px-6 rounded-lg shadow-md">
+        <Zap className="w-16 h-16 text-primary mx-auto mb-4 animate-pulse" />
+        <h2 className="text-3xl font-semibold mb-4">Your Campus, Reimagined.</h2>
+        <p className="text-xl text-muted-foreground max-w-xl mx-auto">
+          Tired of long walks between classes? Late for a meeting? TecoTransit puts the entire campus within reach. Swift, safe, and sustainable rides are just a tap away.
+        </p>
+         <p className="text-md text-muted-foreground max-w-xl mx-auto mt-2 italic">
+          Get where you need to be, hassle-free.
         </p>
       </section>
+
 
       {/* How it Works Section */}
       <section className="w-full max-w-4xl mb-16">
