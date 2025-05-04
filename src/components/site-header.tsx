@@ -11,11 +11,8 @@ interface SiteHeaderProps extends React.HTMLAttributes<HTMLElement> {}
 export function SiteHeader({ className, ...props }: SiteHeaderProps) {
   return (
     <header className={cn("bg-background", className)} {...props}>
-      <div className="container flex h-16 items-center space-x-4 sm:justify-between sm:space-x-0 pl-4">
-        <Link href="/" className="flex items-center space-x-2 mr-6"> {/* Adjusted margin */}
-         {/* Consider adding a Logo component here */}
-        <span className="font-bold sm:inline-block text-lg">TecoTransit</span>
-      </Link>
+      <div className="container flex h-16 items-center space-x-4 sm:justify-between sm:space-x-0 pl-4 md:pl-8"> {/* Added padding left */}
+        {/* Removed the redundant Link element here, it's handled in MainNav */}
         <MainNav items={siteConfig.mainNav} />
         <MobileNav items={siteConfig.mainNav} />
         <div className="flex flex-row gap-4">
@@ -33,4 +30,3 @@ export function SiteHeader({ className, ...props }: SiteHeaderProps) {
     </header>
   )
 }
-

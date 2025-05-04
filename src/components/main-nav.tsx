@@ -3,6 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation" // Import usePathname
+import { Bus } from "lucide-react"; // Import the Bus icon
 
 import { cn } from "@/lib/utils"
 import {
@@ -11,7 +12,7 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu" // Correct import path
+} from "@/components/ui/navigation-menu"
 import type { MainNavItem } from "@/config/site" // Import type if needed
 
 
@@ -32,7 +33,7 @@ export function MainNav({ items }: MainNavProps) {
   return (
     <div className="flex gap-6 md:gap-10">
       <Link href="/" className="flex items-center space-x-2 mr-10"> {/* Increased margin */}
-         {/* Consider adding a Logo component here */}
+         <Bus className="h-6 w-6" /> {/* Added Bus icon */}
         <span className="font-bold sm:inline-block text-lg">TecoTransit</span>
       </Link>
 
