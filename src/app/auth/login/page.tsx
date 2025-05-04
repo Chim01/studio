@@ -19,29 +19,17 @@ const LoginPage = () => {
 
   const handleGoogleSignIn = async () => {
     try {
-      console.log('Attempting Google Sign-In...');
-      const userCredential = await signInWithGoogle();
-      toast({
-        title: "Login Successful",
-        description: `Welcome back, ${userCredential.user.displayName}!`,
-      });
-      router.push('/profile'); // Redirect to profile page on successful login
+      console.log('Attempting Google Sign-In via redirect...');
+      await signInWithGoogle();
+      // No userCredential or toast here, the result is handled after redirect in SiteHeader
+      // The user will be redirected to Google and then back to the app.
     } catch (error) {
+      // Catch errors during the *initiation* of the redirect only
       const authError = error as AuthError;
-      console.error('Google Sign-In Failed:', authError);
-
-      let description = "An error occurred during Google Sign-In.";
-      if (authError.code === 'auth/cancelled-popup-request' || authError.code === 'auth/popup-closed-by-user') {
-        description = "Sign-in cancelled. Please try again.";
-      } else if (authError.code === 'auth/api-key-not-valid.-please-pass-a-valid-api-key.') {
-        description = "Invalid API Key configuration. Please contact support.";
-      } else if (authError.message) {
-        description = authError.message;
-      }
-
+      console.error('Google Sign-In Initiation Failed:', authError);
       toast({
         title: "Google Sign-In Failed",
-        description: description,
+        description: "Could not start the Google Sign-In process. Please check your connection and try again.",
         variant: "destructive",
       });
     }

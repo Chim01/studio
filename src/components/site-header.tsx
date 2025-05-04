@@ -4,9 +4,9 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from 'next/navigation'; // Import useRouter
-import { onAuthStateChanged, User } from 'firebase/auth'; // Import User type
+import { onAuthStateChanged, User, AuthError } from 'firebase/auth'; // Import User and AuthError type
 import { auth } from '@/lib/firebase'; // Import auth instance
-import { signOutUser } from '@/services/auth'; // Import signOutUser function
+import { signOutUser, handleRedirectResult } from '@/services/auth'; // Import signOutUser & handleRedirectResult function
 import { useToast } from "@/hooks/use-toast"; // Import useToast
 import { MainNav } from "@/components/main-nav";
 import { MobileNav } from "@/components/mobile-nav";
@@ -28,7 +28,7 @@ interface SiteHeaderProps extends React.HTMLAttributes<HTMLElement> {}
 
 export function SiteHeader({ className, ...props }: SiteHeaderProps) {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Start loading until auth state and redirect check are done
   const router = useRouter();
   const { toast } = useToast();
 
@@ -41,14 +41,58 @@ export function SiteHeader({ className, ...props }: SiteHeaderProps) {
   };
 
   useEffect(() => {
+    // Listener for authentication state changes
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      console.log("Auth state changed:", currentUser?.displayName);
       setUser(currentUser);
-      setLoading(false);
+      // We might still be loading if getRedirectResult hasn't finished yet
+      // setLoading(false); // Move setLoading(false) to after getRedirectResult finishes
     });
+
+    // Check for redirect result when the component mounts
+    const checkRedirect = async () => {
+      setLoading(true); // Ensure loading is true while checking
+      try {
+        const userCredential = await handleRedirectResult();
+        if (userCredential) {
+          // User signed in successfully via redirect
+          toast({
+            title: "Login Successful",
+            description: `Welcome back, ${userCredential.user.displayName}!`,
+          });
+           // setUser(userCredential.user); // Auth state listener should handle this, but setting it here can be faster UI update
+           // Redirect only if just logged in via redirect and not already on profile
+           if (window.location.pathname !== '/profile') {
+                router.push('/profile');
+            }
+        }
+        // If userCredential is null, it means no redirect sign-in happened, or user is already signed in.
+        // Auth state listener will handle the case where user is already signed in.
+      } catch (error) {
+        const authError = error as AuthError;
+        console.error('Google Sign-In Redirect Failed:', authError);
+        let description = "An error occurred during Google Sign-In.";
+         if (authError.code === 'auth/account-exists-with-different-credential') {
+           description = "An account already exists with the same email address but different sign-in credentials. Try signing in with the original method.";
+         } else if (authError.message) {
+            description = authError.message;
+        }
+        toast({
+          title: "Google Sign-In Failed",
+          description: description,
+          variant: "destructive",
+        });
+      } finally {
+         setLoading(false); // Set loading to false after checking redirect and auth state listener potentially ran
+      }
+    };
+
+    checkRedirect();
 
     // Cleanup subscription on unmount
     return () => unsubscribe();
-  }, []);
+  }, [router, toast]); // Add router and toast as dependencies
+
 
   const handleLogout = async () => {
     try {
