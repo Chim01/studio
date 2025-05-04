@@ -4,21 +4,13 @@ import Image from 'next/image';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, MapPin, Smartphone, ShieldCheck } from "lucide-react";
-import {ai} from '@/ai/ai-instance';
 
-async function generateHeroImage() {
-  const {media} = await ai.generate({
-    model: 'googleai/gemini-2.0-flash-exp',
-    prompt: 'Generate an image of an electric campus vehicle',
-    config: {
-      responseModalities: ['TEXT', 'IMAGE'],
-    },
-  });
-  return media.url;
-}
+// Removed the slow AI image generation function
+// async function generateHeroImage() { ... }
 
 export default async function Home() {
-  const heroImageUrl = await generateHeroImage();
+  // Use a placeholder image URL instead of generating one on every load
+  const heroImageUrl = "https://picsum.photos/1024/400"; // Placeholder image
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-128px)] py-12 px-4 md:px-8">
@@ -35,21 +27,18 @@ export default async function Home() {
         </Link>
       </section>
 
-      {/* Genkit Generated Image */}
+      {/* Static Placeholder Image */}
       <section className="mb-16 w-full max-w-4xl">
-        {heroImageUrl ? (
-          <Image
-            src={heroImageUrl}
-            alt="Electric campus vehicle"
-            width={1024}
-            height={400}
-            className="rounded-lg shadow-md object-cover w-full"
-          />
-        ) : (
-          <p>Generating image...</p>
-        )}
-        <p className="text-sm text-muted-foreground mt-2">
-          AI-generated image of an electric campus vehicle.
+        <Image
+          src={heroImageUrl}
+          alt="Electric campus vehicle placeholder"
+          width={1024}
+          height={400}
+          className="rounded-lg shadow-md object-cover w-full"
+          data-ai-hint="electric campus vehicle futuristic" // Hint for future replacement
+        />
+        <p className="text-sm text-muted-foreground mt-2 text-center">
+          Reliable and efficient campus transportation.
         </p>
       </section>
 
@@ -57,60 +46,85 @@ export default async function Home() {
       <section className="w-full max-w-4xl mb-16">
         <h2 className="text-3xl font-semibold text-center mb-8">How It Works</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <Card>
+          <Card className="hover:shadow-lg transition-shadow duration-300">
             <CardHeader className="items-center">
               <Smartphone className="w-12 h-12 text-primary mb-2" />
               <CardTitle>1. Easy Booking</CardTitle>
             </CardHeader>
             <CardContent className="text-center text-muted-foreground">
-              Enter your pickup and drop-off locations, then select a date for your ride.
+              Enter your pickup and drop-off locations, then select a date for your ride via our simple app.
             </CardContent>
           </Card>
-          <Card>
+          <Card className="hover:shadow-lg transition-shadow duration-300">
             <CardHeader className="items-center">
                <MapPin className="w-12 h-12 text-primary mb-2" />
               <CardTitle>2. Smart Assignment</CardTitle>
             </CardHeader>
             <CardContent className="text-center text-muted-foreground">
-              Our system matches you with the nearest available vehicle for a swift pickup.
+              Our system matches you with the nearest available vehicle for a swift pickup. Track your ride in real-time.
             </CardContent>
           </Card>
-          <Card>
+          <Card className="hover:shadow-lg transition-shadow duration-300">
             <CardHeader className="items-center">
                <CheckCircle className="w-12 h-12 text-primary mb-2" />
               <CardTitle>3. Enjoy the Ride</CardTitle>
             </CardHeader>
             <CardContent className="text-center text-muted-foreground">
-              Relax and enjoy a comfortable and safe ride to your destination on campus.
+              Relax and enjoy a comfortable and safe ride to your destination on campus with our professional drivers.
             </CardContent>
           </Card>
         </div>
       </section>
 
       {/* Why Choose Us Section */}
-      <section className="w-full max-w-4xl mb-12">
-        <h2 className="text-3xl font-semibold text-center mb-8">Why Choose TecoTransit?</h2>
-        <ul className="space-y-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+      <section className="w-full max-w-4xl mb-12 bg-secondary py-12 rounded-lg">
+        <h2 className="text-3xl font-semibold text-center mb-8 text-secondary-foreground">Why Choose TecoTransit?</h2>
+        <ul className="space-y-6 text-lg text-muted-foreground max-w-2xl mx-auto px-4">
           <li className="flex items-start">
-            <ShieldCheck className="w-6 h-6 text-accent mr-3 mt-1 flex-shrink-0" />
-            <span><span className="font-semibold text-foreground">Safety First:</span> We prioritize your safety with trained drivers and monitored rides.</span>
+            <ShieldCheck className="w-8 h-8 text-primary mr-4 mt-1 flex-shrink-0" />
+            <span><span className="font-semibold text-foreground">Safety First:</span> We prioritize your safety with trained drivers, well-maintained vehicles, and monitored rides.</span>
           </li>
           <li className="flex items-start">
-            <CheckCircle className="w-6 h-6 text-accent mr-3 mt-1 flex-shrink-0" />
-            <span><span className="font-semibold text-foreground">Always On Time:</span> Get to your destination quickly and reliably.</span>
+            <CheckCircle className="w-8 h-8 text-primary mr-4 mt-1 flex-shrink-0" />
+            <span><span className="font-semibold text-foreground">Always On Time:</span> Our efficient routing and scheduling means you get to your destination reliably and quickly.</span>
           </li>
            <li className="flex items-start">
-            <MapPin className="w-6 h-6 text-accent mr-3 mt-1 flex-shrink-0" />
-            <span><span className="font-semibold text-foreground">Wide Coverage:</span> Reach any point on campus with ease.</span>
+            <MapPin className="w-8 h-8 text-primary mr-4 mt-1 flex-shrink-0" />
+            <span><span className="font-semibold text-foreground">Campus-Wide Coverage:</span> Reach any point on campus with ease, from dorms to lecture halls and facilities.</span>
+          </li>
+           <li className="flex items-start">
+             {/* Placeholder for an eco-friendly icon */}
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary mr-4 mt-1 flex-shrink-0"><path d="M12 22c-3.3 0-6-2.7-6-6v-4c0-3.3 2.7-6 6-6s6 2.7 6 6v4c0 3.3-2.7 6-6 6z"/><path d="M12 10a2 2 0 00-2 2v4a2 2 0 002 2h0a2 2 0 002-2v-4a2 2 0 00-2-2z"/><path d="M7 10a5 5 0 015-5h0a5 5 0 015 5v4a5 5 0 01-5 5h0a5 5 0 01-5-5z"/></svg> {/* Simple Leaf Icon */}
+            <span><span className="font-semibold text-foreground">Eco-Friendly Option:</span> Choose our electric vehicles for a greener way to travel around campus.</span>
           </li>
         </ul>
       </section>
 
+       {/* Testimonials Section (Example) */}
+      <section className="w-full max-w-4xl mb-16">
+        <h2 className="text-3xl font-semibold text-center mb-8">What Our Riders Say</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <Card>
+            <CardContent className="pt-6">
+              <p className="text-muted-foreground italic">"TecoTransit is a lifesaver! Getting across campus between classes used to be stressful, but now it's quick and easy."</p>
+              <p className="text-right font-semibold mt-4">- Alex J.</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <p className="text-muted-foreground italic">"The drivers are always friendly, and the app is super simple to use. Highly recommend it for any student."</p>
+              <p className="text-right font-semibold mt-4">- Sarah M.</p>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+
        {/* Final CTA */}
       <section className="text-center mt-8">
-         <p className="text-lg text-muted-foreground mb-4">Experience the convenience of TecoTransit today!</p>
+         <p className="text-lg text-muted-foreground mb-4">Ready to simplify your campus commute? Experience the convenience of TecoTransit today!</p>
         <Link href="/booking">
-          <Button variant="secondary" size="lg">Book Your TecoTransit Ride</Button>
+          <Button variant="default" size="lg">Book Your Ride</Button>
         </Link>
       </section>
     </div>
