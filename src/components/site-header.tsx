@@ -172,7 +172,8 @@ export function SiteHeader({ className, ...props }: SiteHeaderProps) {
         <div className="flex items-center">
           {/* Mobile Nav Trigger (visible only on small screens) */}
           <div className="md:hidden mr-4"> {/* Display only on small screens, add margin right */}
-              <MobileNav items={siteConfig.mainNav} />
+              {/* Pass user and logout handler to MobileNav */}
+              <MobileNav items={siteConfig.mainNav} user={user} onLogout={handleLogout} />
           </div>
 
           {/* Main Navigation & Logo Container (visible on md screens and up) */}

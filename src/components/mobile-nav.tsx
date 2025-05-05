@@ -4,7 +4,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { User } from "firebase/auth"; // Import User type if needed (or use from SiteHeader context)
+import type { User } from "firebase/auth"; // Import User type
 
 import { siteConfig } from "@/config/site"
 import { cn } from "@/lib/utils"
@@ -25,11 +25,12 @@ interface MobileNavProps {
     href: string
     disabled?: boolean
   }[],
-  // Optional: Pass user state if needed for conditional rendering
-  // user?: User | null;
+  // Accept user state and logout handler
+  user?: User | null;
+  onLogout?: () => Promise<void>;
 }
 
-export function MobileNav({ items /*, user */ }: MobileNavProps) {
+export function MobileNav({ items, user, onLogout }: MobileNavProps) {
   const pathname = usePathname()
   const [open, setOpen] = React.useState(false)
 
@@ -37,6 +38,13 @@ export function MobileNav({ items /*, user */ }: MobileNavProps) {
   React.useEffect(() => {
     setOpen(false);
   }, [pathname]);
+
+  const handleLogoutClick = async () => {
+    setOpen(false); // Close sheet first
+    if (onLogout) {
+      await onLogout();
+    }
+  }
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -81,25 +89,42 @@ export function MobileNav({ items /*, user */ }: MobileNavProps) {
               ))
           ) : null}
 
-           {/* Add links that are normally in the user dropdown or login/signup */}
-           {/* Example: Link to profile (conditionally show if logged in) */}
-           {/* {user && (
-              <Link
-                href="/profile"
-                 onClick={() => setOpen(false)}
-                className={cn(
-                  "flex items-center rounded-md px-3 py-2 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
-                  pathname === "/profile" ? "bg-accent text-accent-foreground" : "text-muted-foreground"
-                )}
-              >
-                Profile
-              </Link>
-           )} */}
+           <hr className="my-2 border-border"/> {/* Separator */}
 
-           {/* Example: Show Login/Signup if not logged in */}
-           {/* {!user && ( */}
+           {/* Show Profile/Logout if user is logged in */}
+           {user ? (
              <>
-               <hr className="my-2 border-border"/> {/* Separator */}
+               <Link
+                 href="/profile"
+                 onClick={() => setOpen(false)}
+                 className={cn(
+                   "flex items-center rounded-md px-3 py-2 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
+                   pathname === "/profile" ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                 )}
+               >
+                 Profile
+               </Link>
+               {/* <Link
+                 href="/settings" // Example settings link
+                 onClick={() => setOpen(false)}
+                 className={cn(
+                   "flex items-center rounded-md px-3 py-2 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
+                   pathname === "/settings" ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                 )}
+               >
+                 Settings
+               </Link> */}
+                <Button
+                    variant="ghost" // Use ghost variant for link-like appearance in nav
+                    className="justify-start px-3 py-2 text-base font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    onClick={handleLogoutClick}
+                >
+                 Logout
+                </Button>
+             </>
+           ) : (
+             // Show Login/Signup if not logged in
+             <>
                 <Link
                   href="/auth/login"
                   onClick={() => setOpen(false)}
@@ -121,7 +146,7 @@ export function MobileNav({ items /*, user */ }: MobileNavProps) {
                   Sign Up
                 </Link>
              </>
-           {/* )} */}
+           )}
 
         </nav>
       </SheetContent>
