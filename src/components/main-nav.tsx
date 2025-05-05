@@ -26,34 +26,34 @@ export function MainNav({ items }: MainNavProps) {
   return (
      // Removed outer div, SiteHeader will handle visibility and layout
     <>
-      <Link href="/" className="mr-6 flex items-center space-x-2"> {/* Adjust margin as needed */}
+      <Link href="/" className="mr-4 flex items-center space-x-2"> {/* Adjust margin right */}
          <Bus className="h-6 w-6 text-primary" /> {/* Use primary color */}
         <span className="font-bold text-lg text-foreground">TecoTransit</span> {/* Ensure text color matches theme */}
       </Link>
 
-      <NavigationMenu>
-        <NavigationMenuList>
-          {/* Main Navigation Items */}
-          {items?.length ? (
-              items.map((item) => (
-                <NavigationMenuItem key={item.href}>
-                  <Link href={item.href} legacyBehavior passHref>
-                    <NavigationMenuLink
-                      className={cn(
-                        navigationMenuTriggerStyle(),
-                        pathname === item.href ? "bg-accent text-accent-foreground" : "", // Active state styling
-                        "text-sm" // Ensure consistent text size
-                      )}
-                    >
-                      {item.title}
-                    </NavigationMenuLink>
-                  </Link>
-                </NavigationMenuItem>
-              ))
-          ) : null}
-
-        </NavigationMenuList>
-      </NavigationMenu>
+      {/* Conditionally render NavigationMenu only if items exist */}
+      {items?.length ? (
+        <NavigationMenu>
+          <NavigationMenuList>
+            {/* Main Navigation Items */}
+            {items.map((item) => (
+              <NavigationMenuItem key={item.href}>
+                <Link href={item.href} legacyBehavior passHref>
+                  <NavigationMenuLink
+                    className={cn(
+                      navigationMenuTriggerStyle(),
+                      pathname === item.href ? "bg-accent text-accent-foreground" : "", // Active state styling
+                      "text-sm" // Ensure consistent text size
+                    )}
+                  >
+                    {item.title}
+                  </NavigationMenuLink>
+                </Link>
+              </NavigationMenuItem>
+            ))}
+          </NavigationMenuList>
+        </NavigationMenu>
+      ) : null}
     </>
   )
 }

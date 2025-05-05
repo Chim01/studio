@@ -95,7 +95,7 @@ export function SiteHeader({ className, ...props }: SiteHeaderProps) {
            description = "An account already exists with the same email address but different sign-in credentials. Try signing in with the original method.";
          } else if (authError.code === 'auth/credential-already-in-use') {
              description = "This Google account is already linked to another user.";
-         } else if (authError.code === 'auth/api-key-not-valid') {
+         } else if (authError.code === 'auth/api-key-not-valid' || authError.message.includes('api-key-not-valid')) {
             console.error(
                 "FIREBASE AUTH ERROR (Redirect Result): Invalid API Key. \n" +
                 "Potential Causes & Solutions: \n" +
@@ -166,32 +166,36 @@ export function SiteHeader({ className, ...props }: SiteHeaderProps) {
   const isLoading = authLoading || redirectLoading;
 
   return (
-    <header className={cn("sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60", className)} {...props}>
+    <header className={cn("sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60", className)} {...props}>
        {/* Container centers content and adds horizontal padding */}
-      <div className="container flex h-16 items-center"> {/* Reduced padding/margins if needed */}
-        {/* Mobile Nav Trigger (visible only on small screens) */}
-         {/* Show MobileNav first for smaller screens */}
-        <div className="md:hidden"> {/* Display only on small screens */}
-            <MobileNav items={siteConfig.mainNav} />
+      <div className="container flex h-16 items-center justify-between px-4 md:px-6"> {/* Use justify-between and standard padding */}
+
+        {/* Left Section: Mobile Nav Trigger and Desktop Nav */}
+        <div className="flex items-center">
+          {/* Mobile Nav Trigger (visible only on small screens) */}
+          <div className="md:hidden mr-4"> {/* Display only on small screens, add margin right */}
+              <MobileNav items={siteConfig.mainNav} />
+          </div>
+
+          {/* Main Navigation & Logo Container (visible on md screens and up) */}
+          <div className="hidden md:flex items-center"> {/* Removed flex-grow */}
+             <MainNav items={siteConfig.mainNav} /> {/* MainNav includes the logo */}
+          </div>
         </div>
 
-        {/* Main Navigation & Logo Container (visible on md screens and up) */}
-        <div className="hidden md:flex items-center flex-grow"> {/* Use flex-grow to allow nav to take space */}
-           <MainNav items={siteConfig.mainNav} /> {/* MainNav includes the logo */}
-        </div>
 
-        {/* Authentication Section (Always pushed to the right) */}
-        <div className="flex items-center space-x-4"> {/* Removed ml-auto and flex-1 to keep it tighter */}
+        {/* Right Section: Authentication */}
+        <div className="flex items-center space-x-3 md:space-x-4"> {/* Consistent spacing */}
           {isLoading ? (
              // Use Skeleton for better loading state
              <div className="flex items-center space-x-2">
-                <Skeleton className="h-8 w-8 rounded-full" />
-                <Skeleton className="h-6 w-20 rounded-md" />
+                <Skeleton className="h-9 w-9 rounded-full" /> {/* Match Avatar size */}
+                <Skeleton className="hidden md:block h-6 w-20 rounded-md" /> {/* Hide text skeleton on mobile */}
              </div>
           ) : user ? (
              <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                 <Button variant="ghost" className="relative h-9 w-9 rounded-full"> {/* Slightly larger touch target */}
+                 <Button variant="ghost" className="relative h-9 w-9 rounded-full"> {/* Consistent size */}
                     <Avatar className="h-9 w-9">
                     <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} />
                     <AvatarFallback>{getUserInitials(user.displayName)}</AvatarFallback>
@@ -230,8 +234,8 @@ export function SiteHeader({ className, ...props }: SiteHeaderProps) {
             // Hide Login/Signup on small screens as they are in MobileNav sheet
             // Only show these buttons on medium screens and up
             <div className="hidden md:flex items-center space-x-2">
-              <Link href="/auth/login" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-md hover:bg-accent">
-                Login
+              <Link href="/auth/login">
+                 <Button variant="ghost" size="sm">Login</Button> {/* Use ghost for less emphasis */}
               </Link>
               <Link href="/auth/signup">
                  <Button size="sm" variant="default">Sign Up</Button>

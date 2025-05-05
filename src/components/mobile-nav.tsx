@@ -44,7 +44,7 @@ export function MobileNav({ items /*, user */ }: MobileNavProps) {
         <Button
           variant="ghost"
           size="icon" // Use standard icon size
-          className="mr-2 flex h-9 w-9 items-center justify-center md:hidden" // Changed to md:hidden
+          className="flex h-9 w-9 items-center justify-center p-0 md:hidden" // Removed mr-2, ensure padding is 0 for icon size
           aria-label="Open menu"
         >
           <Icons.menu className="h-5 w-5" /> {/* Adjusted icon size */}
