@@ -61,8 +61,8 @@ export function SiteHeader({ className, ...props }: SiteHeaderProps) {
     // Check for redirect result *only once* when the component mounts
     const checkRedirect = async () => {
        if (!auth || processingRedirect.current) {
-            // If auth isn't ready yet, or redirect is already being checked, bail
-            setRedirectLoading(false); // Set redirect loading false if auth isn't ready
+            // If auth isn't ready yet, or redirect is already being processed, bail
+            setRedirectLoading(false); // Set redirect loading false if auth isn't ready or already processing
             return;
         }
         processingRedirect.current = true; // Mark as processing
@@ -121,23 +121,18 @@ export function SiteHeader({ className, ...props }: SiteHeaderProps) {
         setUser(null);
       } finally {
          setRedirectLoading(false); // Redirect check finished
-         // processingRedirect.current = false; // Reset after processing attempt
+         processingRedirect.current = false; // Reset after processing attempt is complete
       }
     };
 
-    // We need to wait briefly for Firebase auth to potentially initialize
-    // before checking the redirect result.
-    // A better approach might involve a global app state/provider for auth readiness.
-    const timer = setTimeout(() => {
-        checkRedirect();
-    }, 500); // Adjust delay if needed, or use a more robust state management
+    // Call checkRedirect directly. It has an internal check for auth readiness.
+    checkRedirect();
 
-
-    // Cleanup: unsubscribe listener and clear timer
+    // Cleanup: unsubscribe listener
     return () => {
       unsubscribe();
-      clearTimeout(timer);
-      processingRedirect.current = false; // Reset on unmount just in case
+      // Reset processing flag on unmount just in case, although finally block should handle it
+      processingRedirect.current = false;
     }
   }, [router, toast, pathname]); // Add pathname to dependencies
 
@@ -161,6 +156,7 @@ export function SiteHeader({ className, ...props }: SiteHeaderProps) {
       });
     }
   };
+
 
   // Combined loading state
   const isLoading = authLoading || redirectLoading;
