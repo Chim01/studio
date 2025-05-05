@@ -24,6 +24,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu" // Import Dropdown components
 
+import { ThemeToggle } from "@/components/theme-toggle";
+
 
 interface SiteHeaderProps extends React.HTMLAttributes<HTMLElement> {}
 
@@ -238,6 +240,7 @@ export function SiteHeader({ className, ...props }: SiteHeaderProps) {
               </Link>
             </div>
           )}
+          <ThemeToggle/>
         </div>
       </div>
     </header>
