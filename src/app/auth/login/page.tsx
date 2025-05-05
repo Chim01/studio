@@ -78,6 +78,10 @@ const LoginPage = () => {
             description = "Authentication configuration error. Please contact support or try again later."; // User-friendly message
       }
        else if (authError.code === 'auth/unauthorized-domain') {
+             console.error(
+                 "FIREBASE AUTH ERROR: Unauthorized Domain. \n" +
+                 "--> FIX: Add the current domain (`" + window.location.hostname + "`) to your Firebase project's **Authentication > Settings > Authorized domains** list. See comments in `src/lib/firebase.ts` for details."
+             );
             description = "This domain is not authorized for Google Sign-In. Please contact support.";
        }
       // Add other specific error codes if needed
@@ -128,6 +132,10 @@ const LoginPage = () => {
          );
          description = "Authentication configuration error. Please contact support.";
       } else if (authError.code === 'auth/unauthorized-domain') {
+            console.error(
+                 "FIREBASE AUTH ERROR (Email Login): Unauthorized Domain. \n" +
+                 "--> FIX: Add the current domain (`" + window.location.hostname + "`) to your Firebase project's **Authentication > Settings > Authorized domains** list."
+             );
             description = "This domain is not authorized for Email Sign-In. Please contact support.";
       }
 

@@ -5,28 +5,32 @@ import { getFirestore } from "firebase/firestore"; // Add if you need Firestore
 // import { getStorage } from "firebase/storage"; // Add if you need Storage
 
 // --- IMPORTANT ---
-// 1. ENSURE `NEXT_PUBLIC_FIREBASE_API_KEY` IS CORRECTLY SET in your .env file.
-//    This value comes from your Firebase project settings:
-//    Project Settings > General > Your apps > Web app > SDK setup and configuration > Config > apiKey.
-// 2. Verify other `NEXT_PUBLIC_FIREBASE_*` variables are also correct in .env.
-// 3. ***AUTH/UNAUTHORIZED-DOMAIN ERROR***: In your Firebase Console (Authentication > Settings > Authorized domains),
-//    ensure your application's domain is added. This includes:
-//      - `localhost` (if testing locally)
-//      - The specific domain provided by your development environment (e.g., `*.cloudworkstations.dev`, `*.gitpod.io`)
+// *** 'accounts.google.com refused to connect' or 'auth/unauthorized-domain' ERROR? ***
+// This is the MOST COMMON issue with Google Sign-In redirects.
+// ---> FIX: In your Firebase Console (Authentication > Settings > Authorized domains),
+//    ensure your application's domain is ADDED TO THE LIST. This includes:
+//      - `localhost` (if testing locally with `npm run dev`)
+//      - The SPECIFIC domain provided by your development environment (e.g., `YOUR_UNIQUE_ID.cloudworkstations.dev`, `*.gitpod.io`)
 //      - Your production deployment domain (e.g., `your-app.vercel.app`, `your-custom-domain.com`)
-//    THIS IS CRUCIAL FOR REDIRECT-BASED AUTH like Google Sign-In. Check for typos.
-// 4. In your Firebase Console (Authentication > Sign-in method), ensure the "Google" provider is enabled.
-// 5. In Google Cloud Console (APIs & Services > Credentials > Select your API Key):
+//    !! Double-check for typos and ensure the EXACT domain is listed. !!
+//
+// Other checks:
+// 1. ENSURE `NEXT_PUBLIC_FIREBASE_API_KEY` IS CORRECTLY SET in your .env file.
+//    Get it from Firebase project settings: Project Settings > General > Your apps > Web app > SDK setup and configuration > Config > apiKey.
+//    Restart `npm run dev` after changing .env.
+// 2. Verify other `NEXT_PUBLIC_FIREBASE_*` variables are also correct in .env.
+// 3. In your Firebase Console (Authentication > Sign-in method), ensure the "Google" provider is enabled.
+// 4. In Google Cloud Console (APIs & Services > Credentials > Select your API Key):
 //    - Check 'Application restrictions'. If 'HTTP referrers' is selected, ensure your app's domains
 //      (including localhost variants if testing locally) are listed. Add patterns like:
 //      - localhost:9002/* (or your specific port)
-//      - *.cloudworkstations.dev/*
+//      - *.cloudworkstations.dev/* (or your specific dev domain pattern)
 //      - your-deployed-app-domain.com/*
 //    - Check 'API restrictions'. Ensure necessary Firebase APIs (like Identity Platform API) are enabled.
 // ---
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyDOGyE4fXg9H3p1cu_4nutedOJkxhvl4ZY", // <<< CHECK THIS ENV VARIABLE in .env
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyAcb4GdbSuAnB7CHxqw-kkH2wl8Uo4RZHk", // <<< CHECK THIS ENV VARIABLE in .env
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "campus-cruiser-nkb4g.firebaseapp.com",
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "campus-cruiser-nkb4g",
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "campus-cruiser-nkb4g.firebasestorage.app",
@@ -42,10 +46,10 @@ if (typeof window !== 'undefined') {
     const apiKeyLoaded = !!firebaseConfig.apiKey && firebaseConfig.apiKey !== "AIzaSyAcb4GdbSuAnB7CHxqw-kkH2wl8Uo4RZHk"; // Check against actual key, not placeholder
     const maskedApiKey = apiKeyLoaded ? `${firebaseConfig.apiKey!.substring(0, 4)}...${firebaseConfig.apiKey!.substring(firebaseConfig.apiKey!.length - 4)}` : 'Not Loaded/Invalid/Placeholder';
     console.log(`API Key Loaded: ${apiKeyLoaded}`);
-    console.log(`API Key (Value): ${firebaseConfig.apiKey || 'Not Loaded'}`); // Log the actual key for debugging in dev
+    // console.log(`API Key (Value): ${firebaseConfig.apiKey || 'Not Loaded'}`); // Uncomment ONLY for local debugging if needed
     console.log(`Auth Domain: ${firebaseConfig.authDomain || 'Not Loaded/Undefined'}`);
     console.log(`Project ID: ${firebaseConfig.projectId || 'Not Loaded/Undefined'}`);
-    console.log("Current Location Origin:", window.location.origin); // Log the origin for easy comparison
+    console.log("Current Location Origin:", window.location.origin); // Log the origin for easy comparison with Authorized Domains
     console.log("--------------------------------------------------");
 
     if (!apiKeyLoaded) {
@@ -67,10 +71,10 @@ if (typeof window !== 'undefined') {
     if (console && console.error && typeof console.error === 'function') {
         const originalError = console.error;
         console.error = (...args) => {
-            if (args.some(arg => typeof arg === 'string' && arg.includes('auth/unauthorized-domain'))) {
+            if (args.some(arg => typeof arg === 'string' && (arg.includes('auth/unauthorized-domain') || arg.includes('accounts.google.com refused to connect')))) {
                  originalError(
                     ...args,
-                    "\n\n🚨 **FIX:** Add the current domain (`" + window.location.hostname + "`) to your Firebase project's Authentication > Settings > Authorized domains list. See comments in `src/lib/firebase.ts` for details. Ensure `localhost` is also added if testing locally.\n"
+                    "\n\n🚨 **FIX:** This error usually means the domain your app is running on (`" + window.location.hostname + "`) is NOT added to your Firebase project's **Authentication > Settings > Authorized domains** list. ADD IT THERE! See comments in `src/lib/firebase.ts` for details. Ensure `localhost` is also added if testing locally.\n"
                  );
             } else {
                 originalError(...args);

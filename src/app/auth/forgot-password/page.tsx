@@ -64,6 +64,16 @@ const ForgotPasswordPage = () => {
             description: "Please enter a valid email address.",
             variant: "destructive",
            });
+       } else if (authError.code === 'auth/unauthorized-domain') {
+           console.error(
+               "FIREBASE AUTH ERROR (Password Reset): Unauthorized Domain. \n" +
+               "--> FIX: Ensure the domain (`" + (typeof window !== 'undefined' ? window.location.hostname : 'UNKNOWN_HOST') + "`) is added to your Firebase project's **Authentication > Settings > Authorized domains** list."
+           );
+           toast({
+                title: "Configuration Error",
+                description: "This domain is not authorized for password reset. Please contact support.",
+                variant: "destructive",
+            });
        }
     } finally {
       setIsLoading(false);

@@ -26,10 +26,11 @@ export const signInWithGoogle = async (): Promise<void> => {
     throw new Error("Authentication service not ready.");
   }
   try {
-    // ***AUTH/UNAUTHORIZED-DOMAIN ERROR?***
-    // If you get this error, make sure the domain you are running the app on
-    // (e.g., localhost, *.cloudworkstations.dev, your deployed domain)
-    // is added to your Firebase project's Authentication > Settings > Authorized domains list.
+    // *** 'accounts.google.com refused to connect' or 'auth/unauthorized-domain' ERROR? ***
+    // ---> FIX: If you get this error, make sure the domain you are running the app on
+    // (e.g., localhost, YOUR_UNIQUE_ID.cloudworkstations.dev, your deployed domain)
+    // is ADDED to your Firebase project's Authentication > Settings > Authorized domains list.
+    // See comments in `src/lib/firebase.ts` for more details.
     await signInWithRedirect(auth, googleProvider);
     console.log("Google Sign-In redirect initiated.");
     // The result (UserCredential or error) is obtained via getRedirectResult() AFTER the redirect.
@@ -58,7 +59,7 @@ export const signInWithGoogle = async (): Promise<void> => {
      if (authError.code === 'auth/unauthorized-domain') {
        console.error(
          "FIREBASE AUTH ERROR (Initiation): Unauthorized Domain. \n" +
-         "FIX: Add the current domain (`" + window.location.hostname + "`) to your Firebase project's Authentication > Settings > Authorized domains list. See comments in `src/lib/firebase.ts` for more details."
+         "--> FIX: Add the current domain (`" + (typeof window !== 'undefined' ? window.location.hostname : 'UNKNOWN_HOST') + "`) to your Firebase project's **Authentication > Settings > Authorized domains** list. See comments in `src/lib/firebase.ts` for more details."
        );
      }
 
@@ -132,7 +133,7 @@ export const handleRedirectResult = async (): Promise<UserCredential | null> => 
      if (authError.code === 'auth/unauthorized-domain') {
        console.error(
          "FIREBASE AUTH ERROR (Redirect Result): Unauthorized Domain. \n" +
-         "FIX: Ensure the domain (`" + (typeof window !== 'undefined' ? window.location.hostname : 'UNKNOWN_HOST') + "`) is added to your Firebase project's Authentication > Settings > Authorized domains list."
+         "--> FIX: Ensure the domain (`" + (typeof window !== 'undefined' ? window.location.hostname : 'UNKNOWN_HOST') + "`) is added to your Firebase project's **Authentication > Settings > Authorized domains** list."
        );
      }
 
@@ -176,7 +177,7 @@ export const signInWithEmail = async (email: string, password: string): Promise<
      if (authError.code === 'auth/unauthorized-domain') {
        console.error(
          "FIREBASE AUTH ERROR (Email Login): Unauthorized Domain. \n" +
-         "FIX: Ensure the domain (`" + (typeof window !== 'undefined' ? window.location.hostname : 'UNKNOWN_HOST') + "`) is added to your Firebase project's Authentication > Settings > Authorized domains list."
+         "--> FIX: Ensure the domain (`" + (typeof window !== 'undefined' ? window.location.hostname : 'UNKNOWN_HOST') + "`) is added to your Firebase project's **Authentication > Settings > Authorized domains** list."
        );
      }
 
@@ -231,7 +232,7 @@ export const signUpWithEmail = async (email: string, password: string, displayNa
      if (authError.code === 'auth/unauthorized-domain') {
        console.error(
          "FIREBASE AUTH ERROR (Signup): Unauthorized Domain. \n" +
-         "FIX: Ensure the domain (`" + (typeof window !== 'undefined' ? window.location.hostname : 'UNKNOWN_HOST') + "`) is added to your Firebase project's Authentication > Settings > Authorized domains list."
+         "--> FIX: Ensure the domain (`" + (typeof window !== 'undefined' ? window.location.hostname : 'UNKNOWN_HOST') + "`) is added to your Firebase project's **Authentication > Settings > Authorized domains** list."
        );
      }
     console.error("Email Sign-Up Error:", authError.code, authError.message);
@@ -261,7 +262,7 @@ export const sendPasswordReset = async (email: string): Promise<void> => {
      if (authError.code === 'auth/unauthorized-domain') {
        console.error(
          "FIREBASE AUTH ERROR (Password Reset): Unauthorized Domain. \n" +
-         "FIX: Ensure the domain (`" + (typeof window !== 'undefined' ? window.location.hostname : 'UNKNOWN_HOST') + "`) is added to your Firebase project's Authentication > Settings > Authorized domains list."
+         "--> FIX: Ensure the domain (`" + (typeof window !== 'undefined' ? window.location.hostname : 'UNKNOWN_HOST') + "`) is added to your Firebase project's **Authentication > Settings > Authorized domains** list."
        );
      }
     // Note: Firebase often throws auth/user-not-found if the email doesn't exist,
