@@ -2,7 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, MapPin, Smartphone, ShieldCheck, Zap, Leaf } from "lucide-react"; // Added Zap and Leaf icons
+import { CheckCircle, MapPin, Smartphone, ShieldCheck, Zap, Leaf, Bus } from "lucide-react"; // Added Bus icon
 
 export default async function Home() {
 
@@ -26,7 +26,7 @@ export default async function Home() {
         <Zap className="w-16 h-16 text-primary mx-auto mb-4 animate-pulse" />
         <h2 className="text-3xl font-semibold mb-4">Your Campus, Reimagined.</h2>
         <p className="text-xl text-muted-foreground max-w-xl mx-auto">
-          Tired of long walks between classes? Late for a meeting? TecoTransit puts the entire campus within reach. Swift, safe, and sustainable rides are just a tap away.
+          Back on campus? Let TecoTransit welcome you home. Forget the long treks and missed moments. Relax, unwind, and let us handle the ride. Your campus adventure starts here, effortlessly.
         </p>
          <p className="text-md text-muted-foreground max-w-xl mx-auto mt-2 italic">
           Get where you need to be, hassle-free.
