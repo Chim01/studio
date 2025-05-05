@@ -77,6 +77,9 @@ const LoginPage = () => {
             );
             description = "Authentication configuration error. Please contact support or try again later."; // User-friendly message
       }
+       else if (authError.code === 'auth/unauthorized-domain') {
+            description = "This domain is not authorized for Google Sign-In. Please contact support.";
+       }
       // Add other specific error codes if needed
 
       toast({
@@ -124,7 +127,10 @@ const LoginPage = () => {
              "FIREBASE AUTH ERROR (Email Login): Invalid API Key. See console logs in site-header or auth.ts for debugging steps."
          );
          description = "Authentication configuration error. Please contact support.";
+      } else if (authError.code === 'auth/unauthorized-domain') {
+            description = "This domain is not authorized for Email Sign-In. Please contact support.";
       }
+
 
       toast({
         title: "Login Failed",

@@ -39,10 +39,10 @@ const firebaseConfig = {
 if (typeof window !== 'undefined') {
     console.log("--- Firebase Config Check (src/lib/firebase.ts) ---");
     // Log the key partially masked for security, but confirm it's loaded.
-    const apiKeyLoaded = !!firebaseConfig.apiKey && firebaseConfig.apiKey !== "AIzaSyAcb4GdbSuAnB7CHxqw-kkH2wl8Uo4RZHk_invalid"; // Check against placeholder
+    const apiKeyLoaded = !!firebaseConfig.apiKey && firebaseConfig.apiKey !== "AIzaSyAcb4GdbSuAnB7CHxqw-kkH2wl8Uo4RZHk"; // Check against actual key, not placeholder
     const maskedApiKey = apiKeyLoaded ? `${firebaseConfig.apiKey!.substring(0, 4)}...${firebaseConfig.apiKey!.substring(firebaseConfig.apiKey!.length - 4)}` : 'Not Loaded/Invalid/Placeholder';
     console.log(`API Key Loaded: ${apiKeyLoaded}`);
-    console.log(`API Key (Masked): ${maskedApiKey}`); // Log masked key
+    console.log(`API Key (Value): ${firebaseConfig.apiKey || 'Not Loaded'}`); // Log the actual key for debugging in dev
     console.log(`Auth Domain: ${firebaseConfig.authDomain || 'Not Loaded/Undefined'}`);
     console.log(`Project ID: ${firebaseConfig.projectId || 'Not Loaded/Undefined'}`);
     console.log("Current Location Origin:", window.location.origin); // Log the origin for easy comparison
@@ -50,7 +50,7 @@ if (typeof window !== 'undefined') {
 
     if (!apiKeyLoaded) {
         console.error(
-            "Firebase API Key (NEXT_PUBLIC_FIREBASE_API_KEY) is missing, invalid, or a placeholder! \n" +
+            "Firebase API Key (NEXT_PUBLIC_FIREBASE_API_KEY) is missing, invalid, or still the hardcoded default! \n" +
             "1. Check your .env file. \n" +
             "2. Ensure the variable name starts with NEXT_PUBLIC_. \n" +
             "3. Make sure it's the correct *Web* API Key from your Firebase project settings. \n" +
@@ -85,8 +85,7 @@ let app: ReturnType<typeof initializeApp> | null = null; // Explicitly type 'app
 // Check if Firebase has already been initialized
 if (!getApps().length) {
     // Ensure config has essential values before initializing
-    // Use the actual key value directly here, removed placeholder check as it's hardcoded now
-    if (firebaseConfig.apiKey && firebaseConfig.authDomain && firebaseConfig.projectId) {
+    if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "AIzaSyAcb4GdbSuAnB7CHxqw-kkH2wl8Uo4RZHk" && firebaseConfig.authDomain && firebaseConfig.projectId) { // Add check against default key
          try {
             app = initializeApp(firebaseConfig);
             console.log("Firebase initialized successfully.");
@@ -102,7 +101,7 @@ if (!getApps().length) {
             }
         }
     } else {
-         console.error("Firebase initialization skipped due to missing critical configuration (Auth Domain, or Project ID). Check .env file.");
+         console.error("Firebase initialization skipped due to missing critical configuration (API Key, Auth Domain, or Project ID) or using default API key. Check .env file.");
          app = null;
     }
 

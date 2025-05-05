@@ -97,9 +97,11 @@ export function SiteHeader({ className, ...props }: SiteHeaderProps) {
            const isAdminUserRedirect = userCredential.user ? ADMIN_UIDS_PLACEHOLDER.includes(userCredential.user.uid) : false;
            setIsAdmin(isAdminUserRedirect);
 
-           if (pathname !== '/profile') {
-                console.log("Redirecting to profile page...");
-                router.push('/profile');
+           // Redirect only if not already on profile page or admin page (if admin)
+           const targetPath = isAdminUserRedirect ? '/admin' : '/profile';
+           if (pathname !== targetPath && pathname !== '/admin') { // Avoid redirect loop if already on admin
+                console.log(`Redirecting to ${targetPath} page...`);
+                router.push(targetPath);
            }
         } else {
              console.log("No redirect result found on this page load.");
@@ -117,6 +119,8 @@ export function SiteHeader({ className, ...props }: SiteHeaderProps) {
                 "FIREBASE AUTH ERROR (Redirect Result): Invalid API Key. See logs in firebase.ts or auth.ts for debugging steps."
             );
             description = "Authentication configuration error. Please contact support or try again later."; // User-friendly message
+        } else if (authError.code === 'auth/unauthorized-domain') {
+             description = "This domain is not authorized for Google Sign-In. Please contact support.";
         } else if (authError.message) {
             description = authError.message;
         }
@@ -138,7 +142,7 @@ export function SiteHeader({ className, ...props }: SiteHeaderProps) {
 
     return () => {
       unsubscribe();
-      processingRedirect.current = false;
+      // No need to reset processingRedirect.current here as it's tied to component mount
     }
   }, [router, toast, pathname]); // Add pathname to dependencies
 
@@ -180,7 +184,7 @@ export function SiteHeader({ className, ...props }: SiteHeaderProps) {
           {/* Mobile Nav Trigger (visible only on small screens) */}
           <div className="md:hidden mr-4">
               {/* Pass filtered items, user, and logout handler to MobileNav */}
-              <MobileNav items={filteredMainNav} user={user} onLogout={handleLogout} />
+              <MobileNav items={filteredMainNav} user={user} onLogout={handleLogout} isAdmin={isAdmin} />
           </div>
 
           {/* Main Navigation & Logo Container (visible on md screens and up) */}
