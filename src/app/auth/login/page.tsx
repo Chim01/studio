@@ -2,6 +2,7 @@
 "use client";
 
 import React from 'react';
+import Link from 'next/link'; // Import Link
 import { useRouter } from 'next/navigation'; // Import useRouter
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -61,6 +62,21 @@ const LoginPage = () => {
       } else if (error instanceof Error && error.message === "Authentication service not ready.") {
         description = "Authentication service is not available. Please try again later.";
       }
+       else if (authError.code === 'auth/api-key-not-valid' || authError.message.includes('api-key-not-valid')) {
+            console.error(
+                "FIREBASE AUTH ERROR: Invalid API Key. \n" +
+                "Potential Causes & Solutions: \n" +
+                "1. Check NEXT_PUBLIC_FIREBASE_API_KEY in your .env file. Is it correct? Is it the *web* API key? \n" +
+                "2. Did you restart the Next.js server (npm run dev) after changing .env? \n" +
+                "3. Check API Key restrictions in Google Cloud Console (Credentials > Your API Key): \n" +
+                "   - Application restrictions > HTTP referrers: Ensure your app's URLs are listed (e.g., `localhost:9002/*`, `*.cloudworkstations.dev/*`, your deployment domain `/*`). \n" +
+                "   - API restrictions: Ensure 'Identity Platform API' (or similar Firebase auth APIs) is enabled/unrestricted for this key. \n" +
+                "4. Is the API key associated with the correct Firebase project (check Project ID in Firebase console vs. .env)? \n" +
+                "5. Ensure Firebase Authentication > Settings > Authorized domains list includes your app's domains (e.g., `localhost`, `*.cloudworkstations.dev`, deployment domain). \n" +
+                "6. Ensure the `firebaseConfig` in `src/lib/firebase.ts` is correctly loading the environment variable."
+            );
+            description = "Authentication configuration error. Please contact support or try again later."; // User-friendly message
+      }
       // Add other specific error codes if needed
 
       toast({
@@ -94,11 +110,22 @@ const LoginPage = () => {
     } catch (error) {
       const authError = error as AuthError;
       let description = "Invalid credentials. Please check your email and password.";
-      if (authError.code === 'auth/user-not-found') {
-        description = "No user found with that email.";
+      if (authError.code === 'auth/user-not-found' || authError.code === 'auth/invalid-credential') { // Added invalid-credential
+        description = "No user found or incorrect credentials.";
       } else if (authError.code === 'auth/wrong-password') {
+        // This code might be less common now, `invalid-credential` is often used instead.
         description = "Incorrect password.";
+      } else if (authError.code === 'auth/too-many-requests') {
+          description = "Access temporarily disabled due to too many failed login attempts. Please reset your password or try again later.";
+      } else if (authError.code === 'auth/network-request-failed') {
+          description = "Network error. Please check your connection.";
+      } else if (authError.code === 'auth/api-key-not-valid' || authError.message.includes('api-key-not-valid')) {
+         console.error(
+             "FIREBASE AUTH ERROR (Email Login): Invalid API Key. See console logs in site-header or auth.ts for debugging steps."
+         );
+         description = "Authentication configuration error. Please contact support.";
       }
+
       toast({
         title: "Login Failed",
         description: description,
@@ -127,6 +154,15 @@ const LoginPage = () => {
           <div className="grid gap-2">
             <Label htmlFor="password">Password</Label>
             <Input id="password" type="password" placeholder="Your password" value={password} onChange={(e) => setPassword(e.target.value)} />
+            {/* Forgot Password Link */}
+            <div className="text-right mt-1">
+              <Link
+                href="/auth/forgot-password"
+                className="text-sm text-primary hover:underline"
+              >
+                Forgot Password?
+              </Link>
+            </div>
           </div>
           <Button className="w-full" onClick={handleEmailLogin} disabled={isEmailLoading}>
             {isEmailLoading ? 'Logging in...' : 'Login'}
@@ -157,6 +193,14 @@ const LoginPage = () => {
             By logging in, you agree to our Terms of Service.
           </p>
         </CardFooter> */}
+         <CardFooter className="flex justify-center">
+          <p className="text-sm text-muted-foreground">
+            Don't have an account?{" "}
+            <Link href="/auth/signup" className="text-primary hover:underline">
+              Sign Up
+            </Link>
+          </p>
+        </CardFooter>
       </Card>
     </div>
   );

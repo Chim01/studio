@@ -9,6 +9,7 @@ import {
   AuthError,
   getRedirectResult,
   updateProfile,
+  sendPasswordResetEmail, // Import sendPasswordResetEmail
 } from 'firebase/auth';
 
 /**
@@ -39,13 +40,14 @@ export const signInWithGoogle = async (): Promise<void> => {
       console.error(
         "FIREBASE AUTH ERROR: Invalid API Key. \n" +
         "Potential Causes & Solutions: \n" +
-        "1. Check NEXT_PUBLIC_FIREBASE_API_KEY in your .env file. Is it correct? \n" +
+        "1. Check NEXT_PUBLIC_FIREBASE_API_KEY in your .env file. Is it correct? Is it the *web* API key? \n" +
         "2. Did you restart the Next.js server (npm run dev) after changing .env? \n" +
-        "3. Check API Key restrictions in Google Cloud Console (Credentials): \n" +
-        "   - HTTP Referrers: Ensure your app's URL (e.g., localhost:xxxx/*, *.cloudworkstations.dev/*) is listed. \n" +
-        "   - API Restrictions: Ensure 'Identity Platform API' (or similar Firebase auth APIs) is enabled for the key. \n" +
-        "4. Is the API key associated with the correct Firebase project (check Project ID)? \n" +
-        " 5. Ensure the `firebaseConfig` in `src/lib/firebase.ts` is correctly using the environment variable."
+        "3. Check API Key restrictions in Google Cloud Console (Credentials > Your API Key): \n" +
+        "   - Application restrictions > HTTP referrers: Ensure your app's URLs are listed (e.g., `localhost:9002/*`, `*.cloudworkstations.dev/*`, your deployment domain `/*`). \n" +
+        "   - API restrictions: Ensure 'Identity Platform API' (or similar Firebase auth APIs) is enabled/unrestricted for this key. \n" +
+        "4. Is the API key associated with the correct Firebase project (check Project ID in Firebase console vs. .env)? \n" +
+        "5. Ensure Firebase Authentication > Settings > Authorized domains list includes your app's domains (e.g., `localhost`, `*.cloudworkstations.dev`, deployment domain). \n" +
+        "6. Ensure the `firebaseConfig` in `src/lib/firebase.ts` is correctly loading the environment variable."
       );
     }
 
@@ -143,6 +145,14 @@ export const signInWithEmail = async (email: string, password: string): Promise<
   } catch (error) {
     const authError = error as AuthError;
     console.error("Email Sign-In Error:", authError.code, authError.message);
+
+    // Specific check for invalid API key
+     if (authError.code === 'auth/api-key-not-valid' || authError.message.includes('api-key-not-valid')) {
+         console.error(
+             "FIREBASE AUTH ERROR (Email Login): Invalid API Key. See console logs in site-header or auth.ts for debugging steps."
+         );
+     }
+
     throw authError;
   }
 };
@@ -164,7 +174,12 @@ export const signUpWithEmail = async (email: string, password: string, displayNa
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
 
     // Update the user's display name
-    await updateProfile(userCredential.user, { displayName: displayName });
+    if (userCredential.user) { // Check if user object exists
+       await updateProfile(userCredential.user, { displayName: displayName });
+    } else {
+        console.warn("User object not available after creation to update profile immediately.");
+    }
+
 
     console.log("User signed up successfully with email:", email);
     return userCredential;
@@ -185,6 +200,31 @@ export const signUpWithEmail = async (email: string, password: string, displayNa
       );
     }
     console.error("Email Sign-Up Error:", authError.code, authError.message);
+    throw authError;
+  }
+};
+
+
+/**
+ * Sends a password reset email to the given email address.
+ * @param email The user's email address.
+ * @returns A promise that resolves when the email is sent.
+ * @throws An AuthError if sending the email fails (e.g., invalid email, network error).
+ */
+export const sendPasswordReset = async (email: string): Promise<void> => {
+  if (!auth) {
+    console.error("Firebase Auth not initialized. Cannot send password reset.");
+    throw new Error("Authentication service not ready.");
+  }
+  try {
+    await sendPasswordResetEmail(auth, email);
+    console.log("Password reset email sent successfully to:", email);
+  } catch (error) {
+    const authError = error as AuthError;
+    console.error("Password Reset Error:", authError.code, authError.message);
+    // Note: Firebase often throws auth/user-not-found if the email doesn't exist,
+    // but for security, we usually don't reveal this to the user.
+    // The calling function should handle this by showing a generic success message.
     throw authError;
   }
 };
