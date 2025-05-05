@@ -4,7 +4,7 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 // import { getFirestore } from "firebase/firestore"; // Add if you need Firestore
 // import { getStorage } from "firebase/storage"; // Add if you need Storage
 
-// IMPORTANT: Verify these environment variables are set correctly in your .env.local file
+// IMPORTANT: Verify these environment variables are set correctly in your .env file
 // and match the configuration in your Firebase project settings.
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -13,7 +13,7 @@ const firebaseConfig = {
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  // measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID // Optional
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID // Optional
 };
 
 // Log to check if the API key is loaded (without logging the key itself)
@@ -21,8 +21,14 @@ if (typeof window !== 'undefined') { // Only run on client-side
     console.log("Firebase API Key Loaded:", !!firebaseConfig.apiKey);
     if (!firebaseConfig.apiKey) {
         console.error("Firebase API Key is missing! Check your NEXT_PUBLIC_FIREBASE_API_KEY environment variable.");
-        alert("Firebase configuration error: API Key is missing. Please check environment variables."); // Alert user
+        // Avoid using alert for configuration errors, rely on console logs.
+    } else {
+        // Optional: Log partial key for verification, but be cautious
+        // console.log("Using Firebase API Key starting with:", firebaseConfig.apiKey.substring(0, 4));
     }
+     // Log other config values if needed for debugging
+    // console.log("Firebase Auth Domain:", firebaseConfig.authDomain);
+    // console.log("Firebase Project ID:", firebaseConfig.projectId);
 }
 
 
@@ -40,10 +46,6 @@ if (!getApps().length) {
     } catch (error) {
         console.error("Firebase initialization error:", error);
         // Prevent further execution if initialization fails
-        if (typeof window !== 'undefined') {
-            alert("Failed to initialize Firebase. Check console for details.");
-        }
-        // Handle the error appropriately, maybe throw or return null auth/provider
         throw new Error("Firebase initialization failed");
     }
 
@@ -62,10 +64,6 @@ try {
     // const storage = getStorage(app); // Add if you need Storage
 } catch (error) {
     console.error("Error getting Firebase services:", error);
-     if (typeof window !== 'undefined') {
-        alert("Failed to get Firebase services after initialization. Check console.");
-    }
-    // Handle the error appropriately
     throw new Error("Failed to get Firebase services");
 }
 
