@@ -167,19 +167,21 @@ export function SiteHeader({ className, ...props }: SiteHeaderProps) {
 
   return (
     <header className={cn("sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60", className)} {...props}>
-       {/* // Container centers content and adds horizontal padding */}
-      <div className="container flex h-16 items-center">
+       {/* Container centers content and adds horizontal padding */}
+      <div className="container flex h-16 items-center"> {/* Reduced padding/margins if needed */}
         {/* Mobile Nav Trigger (visible only on small screens) */}
-        <MobileNav items={siteConfig.mainNav} />
-
-        {/* Main Navigation (visible on md screens and up) */}
-        <div className="hidden md:flex mr-4"> {/* Added margin-right for spacing */}
-           <MainNav items={siteConfig.mainNav} />
+         {/* Show MobileNav first for smaller screens */}
+        <div className="md:hidden"> {/* Display only on small screens */}
+            <MobileNav items={siteConfig.mainNav} />
         </div>
 
+        {/* Main Navigation & Logo Container (visible on md screens and up) */}
+        <div className="hidden md:flex items-center flex-grow"> {/* Use flex-grow to allow nav to take space */}
+           <MainNav items={siteConfig.mainNav} /> {/* MainNav includes the logo */}
+        </div>
 
-        {/* Authentication Section (Pushed to the right) */}
-        <div className="ml-auto flex flex-1 items-center justify-end space-x-4">
+        {/* Authentication Section (Always pushed to the right) */}
+        <div className="flex items-center space-x-4"> {/* Removed ml-auto and flex-1 to keep it tighter */}
           {isLoading ? (
              // Use Skeleton for better loading state
              <div className="flex items-center space-x-2">
@@ -225,9 +227,9 @@ export function SiteHeader({ className, ...props }: SiteHeaderProps) {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            // Use space-x-2 for consistent spacing
-             // Hide Login/Signup on small screens as they are in MobileNav sheet
-            <div className="hidden sm:flex items-center space-x-2">
+            // Hide Login/Signup on small screens as they are in MobileNav sheet
+            // Only show these buttons on medium screens and up
+            <div className="hidden md:flex items-center space-x-2">
               <Link href="/auth/login" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-md hover:bg-accent">
                 Login
               </Link>
@@ -241,4 +243,3 @@ export function SiteHeader({ className, ...props }: SiteHeaderProps) {
     </header>
   );
 }
-```
