@@ -24,7 +24,23 @@ export const signInWithGoogle = async (): Promise<void> => {
     // Handle Errors that might occur *during the initiation* of the redirect.
     // Common initiation errors: network issues, misconfiguration before redirect starts.
     console.error("Google Sign-In Redirect Initiation Error:", authError.code, authError.message);
-    // You might want to map specific error codes to user-friendly messages here.
+
+    // Specific check for invalid API key
+    if (authError.code === 'auth/api-key-not-valid' || authError.message.includes('api-key-not-valid')) {
+         console.error(
+            "FIREBASE AUTH ERROR: Invalid API Key. \n" +
+            "Potential Causes & Solutions: \n" +
+            "1. Check NEXT_PUBLIC_FIREBASE_API_KEY in your .env file. Is it correct? \n" +
+            "2. Did you restart the Next.js server (npm run dev) after changing .env? \n" +
+            "3. Check API Key restrictions in Google Cloud Console (Credentials): \n" +
+            "   - HTTP Referrers: Ensure your app's URL (e.g., localhost:xxxx/*, *.cloudworkstations.dev/*) is listed. \n" +
+            "   - API Restrictions: Ensure 'Identity Platform API' (or similar Firebase auth APIs) is enabled for the key. \n" +
+            "4. Is the API key associated with the correct Firebase project (check Project ID)? \n" +
+             "5. Ensure the `firebaseConfig` in `src/lib/firebase.ts` is correctly using the environment variable."
+        );
+    }
+
+    // You might want to map other specific error codes to user-friendly messages here.
     throw authError; // Re-throw the error to be caught by the caller (e.g., UI)
   }
 };
@@ -81,6 +97,14 @@ export const handleRedirectResult = async (): Promise<UserCredential | null> => 
         // Handle Errors that occurred *during the redirect sign-in process*.
         // Common redirect errors: auth/account-exists-with-different-credential, auth/auth-domain-config-required, auth/credential-already-in-use
         console.error("Google Sign-In Redirect Result Error:", authError.code, authError.message);
+
+        // Specific check for invalid API key during redirect result processing
+        if (authError.code === 'auth/api-key-not-valid' || authError.message.includes('api-key-not-valid')) {
+             console.error(
+                "FIREBASE AUTH ERROR (Redirect Result): Invalid API Key. See previous initiation error message for debugging steps."
+            );
+        }
+
         // Optionally provide more specific user feedback based on authError.code
         // Example:
         // if (authError.code === 'auth/account-exists-with-different-credential') {

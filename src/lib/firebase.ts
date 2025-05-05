@@ -7,15 +7,19 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 // --- IMPORTANT ---
 // 1. ENSURE `NEXT_PUBLIC_FIREBASE_API_KEY` IS CORRECTLY SET in your .env file.
 //    This value comes from your Firebase project settings:
-//    Project Settings > General > Your apps > Web app > API Key.
-// 2. Verify other `NEXT_PUBLIC_FIREBASE_*` variables are also correct.
+//    Project Settings > General > Your apps > Web app > SDK setup and configuration > Config > apiKey.
+// 2. Verify other `NEXT_PUBLIC_FIREBASE_*` variables are also correct in .env.
 // 3. In your Firebase Console (Authentication > Settings > Authorized domains), ensure your
 //    application's domain (e.g., localhost, your-deployment-url.com, *.cloudworkstations.dev) is added.
-//    THIS IS CRUCIAL FOR REDIRECT-BASED AUTH.
+//    THIS IS CRUCIAL FOR REDIRECT-BASED AUTH. Check for typos.
 // 4. In your Firebase Console (Authentication > Sign-in method), ensure the "Google" provider is enabled.
-// 5. In Google Cloud Console (APIs & Services > Credentials), check the restrictions on the API key
-//    associated with your Firebase project. Ensure it allows requests from your application's domain
-//    and that the "Identity Platform API" or relevant Firebase APIs are enabled.
+// 5. In Google Cloud Console (APIs & Services > Credentials > Select your API Key):
+//    - Check 'Application restrictions'. If 'HTTP referrers' is selected, ensure your app's domains
+//      (including localhost variants if testing locally) are listed. Add patterns like:
+//      - localhost:9002/* (or your specific port)
+//      - *.cloudworkstations.dev/*
+//      - your-deployed-app-domain.com/*
+//    - Check 'API restrictions'. Ensure necessary Firebase APIs (like Identity Platform API) are enabled.
 // ---
 
 const firebaseConfig = {
@@ -30,17 +34,27 @@ const firebaseConfig = {
 
 // Client-side logging to help diagnose configuration issues
 if (typeof window !== 'undefined') {
-    console.log("Firebase Config Check (src/lib/firebase.ts):");
-    // Log the key directly ONLY for local debugging, be careful not to commit/expose this in production logs
-    // console.log("Attempting to use API Key:", firebaseConfig.apiKey ? firebaseConfig.apiKey.substring(0, 5) + '...' : 'Not Loaded');
-    console.log(" - Is NEXT_PUBLIC_FIREBASE_API_KEY Loaded?:", !!firebaseConfig.apiKey);
-    console.log(" - Auth Domain:", firebaseConfig.authDomain);
-    console.log(" - Project ID:", firebaseConfig.projectId);
+    console.log("--- Firebase Config Check (src/lib/firebase.ts) ---");
+    // Log the key partially masked for security, but confirm it's loaded.
+    const apiKeyLoaded = !!firebaseConfig.apiKey;
+    const maskedApiKey = apiKeyLoaded ? `${firebaseConfig.apiKey!.substring(0, 4)}...${firebaseConfig.apiKey!.substring(firebaseConfig.apiKey!.length - 4)}` : 'Not Loaded/Undefined';
+    console.log(`API Key Loaded: ${apiKeyLoaded}`);
+    console.log(`API Key (Masked): ${maskedApiKey}`); // Log masked key
+    console.log(`Auth Domain: ${firebaseConfig.authDomain || 'Not Loaded/Undefined'}`);
+    console.log(`Project ID: ${firebaseConfig.projectId || 'Not Loaded/Undefined'}`);
+    console.log("--------------------------------------------------");
 
-    if (!firebaseConfig.apiKey) {
+    if (!apiKeyLoaded) {
         console.error(
             "Firebase API Key (NEXT_PUBLIC_FIREBASE_API_KEY) is missing or undefined! " +
-            "Please ensure it is correctly set in your .env file and the Next.js development server was restarted after adding it."
+            "1. Check your .env file. \n" +
+            "2. Ensure the variable name starts with NEXT_PUBLIC_. \n" +
+            "3. Restart your Next.js development server (npm run dev) after changes to .env."
+        );
+    } else if (firebaseConfig.apiKey === 'YOUR_FIREBASE_API_KEY_HERE' || firebaseConfig.apiKey === 'AIzaSyAcb4GdbSuAnB7CHxqw-kkH2wl8Uo4RZHk_invalid') { // Added placeholder check
+         console.warn(
+            "It looks like you're using a placeholder or potentially invalid API key. " +
+            "Please replace it with your actual Firebase project's API key in the .env file."
         );
     }
      if (!firebaseConfig.authDomain || !firebaseConfig.projectId) {
@@ -53,27 +67,33 @@ if (typeof window !== 'undefined') {
 
 
 // Initialize Firebase
-let app;
+let app: ReturnType<typeof initializeApp> | null = null; // Explicitly type 'app'
 // Check if Firebase has already been initialized
 if (!getApps().length) {
     // Ensure config has essential values before initializing
     if (firebaseConfig.apiKey && firebaseConfig.authDomain && firebaseConfig.projectId) {
          try {
-            app = initializeApp(firebaseConfig);
-            console.log("Firebase initialized successfully.");
+            // Only attempt initialization if the API key seems valid (not a placeholder)
+            if (firebaseConfig.apiKey !== 'YOUR_FIREBASE_API_KEY_HERE' && firebaseConfig.apiKey !== 'AIzaSyAcb4GdbSuAnB7CHxqw-kkH2wl8Uo4RZHk_invalid') {
+                app = initializeApp(firebaseConfig);
+                console.log("Firebase initialized successfully.");
+            } else {
+                 console.error("Firebase initialization skipped because API Key seems to be a placeholder or marked invalid.");
+                 app = null;
+            }
         } catch (error) {
             console.error("Firebase initialization error:", error);
             // Prevent further execution if initialization fails critically
             // This often happens if the config values are syntactically wrong
              app = null; // Ensure app is null if init fails
             if (typeof window !== 'undefined') {
-                 alert("Critical Firebase Initialization Error. Check console and .env configuration.");
+                 // Avoid alert in production code, use better UI feedback
+                 // alert("Critical Firebase Initialization Error. Check console and .env configuration.");
+                 console.error("CRITICAL FIREBASE INIT ERROR - Check console and .env configuration.");
             }
-            // throw new Error("Firebase initialization failed. Check console for details.");
         }
     } else {
          console.error("Firebase initialization skipped due to missing critical configuration (API Key, Auth Domain, or Project ID). Check .env file.");
-         // Handle the case where Firebase cannot be initialized (e.g., show an error state)
          app = null;
     }
 
