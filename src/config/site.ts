@@ -17,6 +17,7 @@ export type MainNavItem = {
   title: string
   href: string
   description?: string
+  adminOnly?: boolean // Flag for admin-only links
 }
 
 export const siteConfig: SiteConfig = {
@@ -33,7 +34,6 @@ export const siteConfig: SiteConfig = {
     x: "https://twitter.com/shadcn", // Placeholder link (can be same as twitter initially)
   },
   mainNav: [
-     // Removed Admin Dashboard link
     {
       title: "Booking",
       href: "/booking",
@@ -43,6 +43,12 @@ export const siteConfig: SiteConfig = {
       title: "Chat",
       href: "/chat",
       description: "Get help via real-time chat.",
+    },
+     {
+      title: "Admin", // Add Admin link back
+      href: "/admin",
+      description: "Manage application settings and users.",
+      adminOnly: true, // Mark as admin only
     },
     // { // Example of adding more top-level nav items if needed
     //   title: "Vehicles",

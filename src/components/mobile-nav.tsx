@@ -6,7 +6,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import type { User } from "firebase/auth"; // Import User type
 
-import { siteConfig } from "@/config/site"
+import { siteConfig, MainNavItem } from "@/config/site" // Import MainNavItem type
 import { cn } from "@/lib/utils"
 import { Icons } from "@/components/icons"
 import { Button } from "@/components/ui/button"
@@ -20,17 +20,13 @@ import {
 } from "@/components/ui/sheet"
 
 interface MobileNavProps {
-  items: {
-    title: string
-    href: string
-    disabled?: boolean
-  }[],
-  // Accept user state and logout handler
+  items: MainNavItem[], // Expect filtered items
   user?: User | null;
   onLogout?: () => Promise<void>;
+  isAdmin?: boolean; // Add isAdmin prop
 }
 
-export function MobileNav({ items, user, onLogout }: MobileNavProps) {
+export function MobileNav({ items, user, onLogout, isAdmin }: MobileNavProps) {
   const pathname = usePathname()
   const [open, setOpen] = React.useState(false)
 
@@ -51,36 +47,37 @@ export function MobileNav({ items, user, onLogout }: MobileNavProps) {
       <SheetTrigger asChild>
         <Button
           variant="ghost"
-          size="icon" // Use standard icon size
-          className="flex h-9 w-9 items-center justify-center p-0 md:hidden" // Removed mr-2, ensure padding is 0 for icon size
+          size="icon"
+          className="flex h-9 w-9 items-center justify-center p-0 md:hidden"
           aria-label="Open menu"
         >
-          <Icons.menu className="h-5 w-5" /> {/* Adjusted icon size */}
+          <Icons.menu className="h-5 w-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="pr-0 w-[280px]"> {/* Optional: Adjust width */}
-        <SheetHeader className="text-left px-4 pt-4"> {/* Added padding */}
+      <SheetContent side="left" className="pr-0 w-[280px]">
+        <SheetHeader className="text-left px-4 pt-4">
            <Link href="/" className="flex items-center space-x-2 mb-4" onClick={() => setOpen(false)}>
-            {/* Reuse logo/name from MainNav */}
              <Icons.logo className="h-6 w-6 text-primary" />
-             <SheetTitle className="font-bold text-lg text-primary">{siteConfig.name}</SheetTitle> {/* Changed text color to primary */}
+             <SheetTitle className="font-bold text-lg text-primary">{siteConfig.name}</SheetTitle>
            </Link>
           {/* <SheetDescription>
             {siteConfig.description}
           </SheetDescription> */}
         </SheetHeader>
-        <nav className="mt-6 grid gap-2 px-4"> {/* Use nav tag */}
+        <nav className="mt-6 grid gap-2 px-4">
+          {/* Display filtered main nav items */}
           {items?.length ? (
               items.map((item) => (
                 <Link
-                  key={item.href} // Use href as key if guaranteed unique
+                  key={item.href}
                   href={item.href}
-                  onClick={() => setOpen(false)} // Close sheet on link click
+                  onClick={() => setOpen(false)}
                   className={cn(
-                    "flex items-center rounded-md px-3 py-2 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground", // Adjusted text size and padding
+                    "flex items-center rounded-md px-3 py-2 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
                     pathname === item.href
-                      ? "bg-accent text-accent-foreground" // Active state
-                      : "text-muted-foreground"
+                      ? "bg-accent text-accent-foreground"
+                      : "text-muted-foreground",
+                    item.disabled && "pointer-events-none opacity-60" // Handle disabled state
                   )}
                   aria-disabled={item.disabled}
                 >
@@ -89,9 +86,9 @@ export function MobileNav({ items, user, onLogout }: MobileNavProps) {
               ))
           ) : null}
 
-           <hr className="my-2 border-border"/> {/* Separator */}
+           <hr className="my-2 border-border"/>
 
-           {/* Show Profile/Logout if user is logged in */}
+           {/* Show Profile/Logout/Admin if user is logged in */}
            {user ? (
              <>
                <Link
@@ -104,19 +101,22 @@ export function MobileNav({ items, user, onLogout }: MobileNavProps) {
                >
                  Profile
                </Link>
-               {/* <Link
-                 href="/settings" // Example settings link
-                 onClick={() => setOpen(false)}
-                 className={cn(
-                   "flex items-center rounded-md px-3 py-2 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
-                   pathname === "/settings" ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                {/* Conditionally show Admin link */}
+                 {isAdmin && (
+                     <Link
+                         href="/admin"
+                         onClick={() => setOpen(false)}
+                         className={cn(
+                         "flex items-center rounded-md px-3 py-2 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
+                         pathname === "/admin" ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                         )}
+                     >
+                         Admin Dashboard
+                    </Link>
                  )}
-               >
-                 Settings
-               </Link> */}
                 <Button
-                    variant="ghost" // Use ghost variant for link-like appearance in nav
-                    className="justify-start px-3 py-2 text-base font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    variant="ghost"
+                    className="justify-start px-3 py-2 text-base font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground w-full" // Ensure full width for consistency
                     onClick={handleLogoutClick}
                 >
                  Logout
@@ -153,11 +153,3 @@ export function MobileNav({ items, user, onLogout }: MobileNavProps) {
     </Sheet>
   )
 }
-
-// Add Icons.logo if it doesn't exist in icons.tsx
-// Example:
-// import { Bus } from "lucide-react";
-// export const Icons = {
-//   menu: MenuIcon,
-//   logo: Bus, // Or your specific logo component
-// }
