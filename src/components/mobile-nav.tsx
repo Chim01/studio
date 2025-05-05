@@ -55,7 +55,7 @@ export function MobileNav({ items /*, user */ }: MobileNavProps) {
            <Link href="/" className="flex items-center space-x-2 mb-4" onClick={() => setOpen(false)}>
             {/* Reuse logo/name from MainNav */}
              <Icons.logo className="h-6 w-6 text-primary" />
-             <SheetTitle className="font-bold text-lg text-foreground">{siteConfig.name}</SheetTitle>
+             <SheetTitle className="font-bold text-lg text-primary">{siteConfig.name}</SheetTitle> {/* Changed text color to primary */}
            </Link>
           {/* <SheetDescription>
             {siteConfig.description}
