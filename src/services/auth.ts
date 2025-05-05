@@ -170,6 +170,20 @@ export const signUpWithEmail = async (email: string, password: string, displayNa
     return userCredential;
   } catch (error) {
     const authError = error as AuthError;
+     // Specific check for invalid API key during signup
+    if (authError.code === 'auth/api-key-not-valid' || authError.message.includes('api-key-not-valid')) {
+      console.error(
+        "FIREBASE AUTH ERROR (Signup): Invalid API Key. \n" +
+        "Potential Causes & Solutions: \n" +
+        "1. Check NEXT_PUBLIC_FIREBASE_API_KEY in your .env file. Is it correct? \n" +
+        "2. Did you restart the Next.js server (npm run dev) after changing .env? \n" +
+        "3. Check API Key restrictions in Google Cloud Console (Credentials): \n" +
+        "   - HTTP Referrers: Ensure your app's URL (e.g., localhost:xxxx/*, *.cloudworkstations.dev/*) is listed. \n" +
+        "   - API Restrictions: Ensure 'Identity Platform API' (or similar Firebase auth APIs) is enabled for the key. \n" +
+        "4. Is the API key associated with the correct Firebase project (check Project ID)? \n" +
+        " 5. Ensure the `firebaseConfig` in `src/lib/firebase.ts` is correctly using the environment variable."
+      );
+    }
     console.error("Email Sign-Up Error:", authError.code, authError.message);
     throw authError;
   }
