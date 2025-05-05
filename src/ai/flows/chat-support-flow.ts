@@ -28,21 +28,34 @@ export async function chatSupport(input: ChatSupportInput): Promise<ChatSupportO
   return chatSupportFlow(input);
 }
 
+// Define the internal schema used by the prompt, which includes preprocessed history
+const PromptInputSchema = z.object({
+  userMessage: z.string(),
+  // The history passed to the prompt will have boolean flags
+  processedHistory: z.array(z.object({
+    role: z.enum(['user', 'model']),
+    content: z.string(),
+    isUser: z.boolean(),
+    isModel: z.boolean(),
+  })).optional(),
+});
+
+
 // Define the Genkit prompt
 const supportPrompt = ai.definePrompt(
   {
     name: 'chatSupportPrompt',
-    input: { schema: ChatSupportInputSchema },
+    input: { schema: PromptInputSchema }, // Use the internal schema
     output: { schema: ChatSupportOutputSchema },
     prompt: `You are a friendly and helpful support agent for "TecoTransit", a campus ride-booking app.
     Your goal is to assist users with their questions about the service.
     Be concise and helpful. If you don't know the answer, politely say so.
 
     Chat History:
-    {{#if history}}
-      {{#each history}}
-        {{#if (eq role 'user')}}User: {{content}}{{/if}}
-        {{#if (eq role 'model')}}Support: {{content}}{{/if}}
+    {{#if processedHistory}}
+      {{#each processedHistory}}
+        {{#if isUser}}User: {{content}}{{/if}}
+        {{#if isModel}}Support: {{content}}{{/if}}
       {{/each}}
     {{/if}}
 
@@ -61,7 +74,20 @@ const chatSupportFlow = ai.defineFlow<typeof ChatSupportInputSchema, typeof Chat
     outputSchema: ChatSupportOutputSchema,
   },
   async (input) => {
-     const llmResponse = await supportPrompt(input);
+     // Preprocess history to add boolean flags for Handlebars
+     const processedHistory = input.history?.map(msg => ({
+       ...msg,
+       isUser: msg.role === 'user',
+       isModel: msg.role === 'model',
+     }));
+
+     // Prepare input for the prompt using the internal schema
+     const promptInput: z.infer<typeof PromptInputSchema> = {
+       userMessage: input.userMessage,
+       processedHistory: processedHistory,
+     };
+
+     const llmResponse = await supportPrompt(promptInput); // Pass preprocessed input
      const output = llmResponse.output;
 
     if (!output) {
