@@ -18,8 +18,16 @@ import { auth } from '@/lib/firebase'; // Import auth to check initialization
 const SignupPage = () => {
    const { toast } = useToast();
    const router = useRouter(); // Initialize router
+   const [isGoogleLoading, setIsGoogleLoading] = React.useState(false); // Add loading state for Google button
 
   const handleGoogleSignUp = async () => {
+     setIsGoogleLoading(true); // Set loading state immediately
+     // Show toast immediately to indicate action is starting
+     toast({
+        title: "Redirecting to Google",
+        description: "Please complete the sign-up with Google.",
+      });
+
     // Check if Firebase Auth is initialized
     if (!auth) {
        toast({
@@ -27,18 +35,16 @@ const SignupPage = () => {
         description: "Authentication service is not available. Please try again later.",
         variant: "destructive",
       });
+       setIsGoogleLoading(false); // Reset loading state on error
       return;
     }
 
      try {
       console.log('Attempting Google Sign-Up via redirect...');
       await signInWithGoogle(); // Use the same function for signup/login redirect
-      // No userCredential or toast here, the result is handled after redirect in SiteHeader
-      // Add a toast to inform the user they are being redirected.
-       toast({
-          title: "Redirecting to Google",
-          description: "Please complete the sign-up with Google.",
-        });
+      // No userCredential or success toast here, the result is handled after redirect in SiteHeader
+      // The "Redirecting" toast is already shown.
+      // Don't reset loading state here, as the page will redirect away
     } catch (error) {
       // Catch errors during the *initiation* of the redirect only
       const authError = error as AuthError;
@@ -58,6 +64,7 @@ const SignupPage = () => {
         description: description,
         variant: "destructive",
       });
+       setIsGoogleLoading(false); // Reset loading state on error
     }
   };
 
@@ -109,9 +116,9 @@ const SignupPage = () => {
           </div>
 
           {/* Google Sign-Up Button */}
-          <Button variant="outline" className="w-full" onClick={handleGoogleSignUp}>
+          <Button variant="outline" className="w-full" onClick={handleGoogleSignUp} disabled={isGoogleLoading}>
              <GoogleIcon className="mr-2 h-4 w-4" /> {/* Added icon */}
-            Sign up with Google
+             {isGoogleLoading ? 'Redirecting...' : 'Sign up with Google'}
           </Button>
 
         </CardContent>
