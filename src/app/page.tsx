@@ -26,7 +26,7 @@ export default async function Home() {
         <Zap className="w-16 h-16 text-primary mx-auto mb-4 animate-pulse" />
         <h2 className="text-3xl font-semibold mb-4">Your Campus, Reimagined.</h2>
         <p className="text-xl text-muted-foreground max-w-xl mx-auto">
-          Back on campus? Let TecoTransit welcome you home. Forget the long treks and missed moments. Relax, unwind, and let us handle the ride. Your campus adventure starts here, effortlessly.
+           Whether you're arriving fresh for the semester or heading home for a well-deserved break, TecoTransit is your campus connection. Navigate between halls, the library, or your ride home with ease. Let us handle the commute, so you can focus on what matters.
         </p>
          <p className="text-md text-muted-foreground max-w-xl mx-auto mt-2 italic">
           Get where you need to be, hassle-free.
