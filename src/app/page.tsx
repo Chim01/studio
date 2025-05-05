@@ -14,7 +14,7 @@ export default async function Home() {
           Welcome to TecoTransit
         </h1>
         <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-          Navigate campus effortlessly with TecoTransit, your reliable ride-booking app designed for safety and efficiency.
+          Navigate effortlessly with TecoTransit, your reliable ride-booking app designed for safety and efficiency.
         </p>
         <Link href="/booking">
           <Button size="lg">Book a Ride Now</Button>
@@ -24,9 +24,9 @@ export default async function Home() {
       {/* Creative Text Section */}
       <section className="mb-16 w-full max-w-4xl text-center bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 py-12 px-6 rounded-lg shadow-md">
         <Zap className="w-16 h-16 text-primary mx-auto mb-4 animate-pulse" />
-        <h2 className="text-3xl font-semibold mb-4">Your Campus, Reimagined.</h2>
+        <h2 className="text-3xl font-semibold mb-4">Your Journey, Reimagined.</h2>
         <p className="text-xl text-muted-foreground max-w-xl mx-auto">
-           Whether you're arriving fresh for the semester or heading home for a well-deserved break, TecoTransit is your campus connection. Navigate between halls, the library, or your ride home with ease. Let us handle the commute, so you can focus on what matters.
+           Whether you're arriving fresh for the semester or heading home for a well-deserved break, TecoTransit is your campus connection. Navigate your ride home or to school with ease. Let us handle the commute, so you can focus on what matters.
         </p>
          <p className="text-md text-muted-foreground max-w-xl mx-auto mt-2 italic">
           Get where you need to be, hassle-free.
@@ -53,7 +53,7 @@ export default async function Home() {
               <CardTitle>2. Smart Assignment</CardTitle>
             </CardHeader>
             <CardContent className="text-center text-muted-foreground">
-              Our system matches you with the nearest available vehicle for a swift pickup. Track your ride in real-time.
+              Our system matches you with the nearest available vehicle for a swift pickup.
             </CardContent>
           </Card>
           <Card className="hover:shadow-lg transition-shadow duration-300">
@@ -119,7 +119,7 @@ export default async function Home() {
 
        {/* Final CTA */}
       <section className="text-center mt-8">
-         <p className="text-lg text-muted-foreground mb-4">Ready to simplify your campus commute? Experience the convenience of TecoTransit today!</p>
+         <p className="text-lg text-muted-foreground mb-4">Ready to simplify your commute? Experience the convenience of TecoTransit today!</p>
         <Link href="/booking">
           <Button variant="default" size="lg">Book Your Ride</Button>
         </Link>

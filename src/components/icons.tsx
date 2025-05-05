@@ -1,18 +1,7 @@
 import * as React from "react"
-import { Menu } from "lucide-react"
+import { Menu, Bus } from "lucide-react" // Added Bus
 
-export function Icon({
-  icon,
-  className,
-  ...props
-}: {
-  icon: "logo" | "spinner" | "arrowRight" | "chevronLeft" | "chevronRight"
-} & React.HTMLAttributes<SVGElement>) {
-  switch (icon) {
-    default:
-      return <Menu className={className} {...props} />;
-  }
-}
+// Removed the duplicate Icon component declaration
 
 export const MenuIcon = React.forwardRef<
   React.ElementRef<"svg">,
@@ -26,11 +15,21 @@ export const MenuIcon = React.forwardRef<
 ))
 MenuIcon.displayName = "MenuIcon"
 
+// Added BusIcon specifically for logo usage if needed separate styling
+export const BusIcon = React.forwardRef<
+  React.ElementRef<"svg">,
+  React.ComponentPropsWithoutRef<"svg">
+>(({ className, ...props }, ref) => (
+  <Bus
+    ref={ref}
+    className={className}
+    {...props}
+  />
+))
+BusIcon.displayName = "BusIcon"
 
-export const IconsMenu = {
-  menu: MenuIcon,
-}
 
 export const Icons = {
-  ...IconsMenu
+  menu: MenuIcon,
+  logo: BusIcon, // Assign the Bus icon/component to 'logo'
 }

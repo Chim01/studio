@@ -95,8 +95,22 @@ export function SiteHeader({ className, ...props }: SiteHeaderProps) {
            description = "An account already exists with the same email address but different sign-in credentials. Try signing in with the original method.";
          } else if (authError.code === 'auth/credential-already-in-use') {
              description = "This Google account is already linked to another user.";
-         } else if (authError.message) {
-            description = authError.message; // Use Firebase's message if available
+         } else if (authError.code === 'auth/api-key-not-valid') {
+            console.error(
+                "FIREBASE AUTH ERROR (Redirect Result): Invalid API Key. \n" +
+                "Potential Causes & Solutions: \n" +
+                "1. Check NEXT_PUBLIC_FIREBASE_API_KEY in your .env file. Is it correct (AIza...)? Is it the *web* API key? \n" +
+                "2. Did you restart the Next.js server (npm run dev) after changing .env? \n" +
+                "3. Check API Key restrictions in Google Cloud Console (Credentials > Your API Key): \n" +
+                "   - Application restrictions > HTTP referrers: Ensure your app's URLs are listed (e.g., `localhost:9002/*`, `*.cloudworkstations.dev/*`, your deployment domain `/*`). \n" +
+                "   - API restrictions: Ensure 'Identity Platform API' (or similar Firebase auth APIs) is enabled/unrestricted for this key. \n" +
+                "4. Is the API key associated with the correct Firebase project (check Project ID in Firebase console vs. .env)? \n" +
+                "5. Ensure Firebase Authentication > Settings > Authorized domains list includes your app's domains (e.g., `localhost`, `*.cloudworkstations.dev`, deployment domain). \n" +
+                "6. Ensure the `firebaseConfig` in `src/lib/firebase.ts` is correctly loading the environment variable."
+            );
+            description = "Authentication configuration error. Please contact support or try again later."; // User-friendly message
+        } else if (authError.message) {
+            description = authError.message; // Use Firebase's message if available and not too technical
         }
         toast({
           title: "Google Sign-In Failed",
@@ -153,10 +167,19 @@ export function SiteHeader({ className, ...props }: SiteHeaderProps) {
 
   return (
     <header className={cn("sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60", className)} {...props}>
-      <div className="container flex h-16 items-center space-x-4 sm:justify-between sm:space-x-0 pl-4 md:pl-8"> {/* Added padding left */}
-        <MainNav items={siteConfig.mainNav} />
+       {/* // Container centers content and adds horizontal padding */}
+      <div className="container flex h-16 items-center">
+        {/* Mobile Nav Trigger (visible only on small screens) */}
         <MobileNav items={siteConfig.mainNav} />
-        <div className="flex flex-1 items-center justify-end space-x-4"> {/* Adjusted for right alignment */}
+
+        {/* Main Navigation (visible on md screens and up) */}
+        <div className="hidden md:flex mr-4"> {/* Added margin-right for spacing */}
+           <MainNav items={siteConfig.mainNav} />
+        </div>
+
+
+        {/* Authentication Section (Pushed to the right) */}
+        <div className="ml-auto flex flex-1 items-center justify-end space-x-4">
           {isLoading ? (
              // Use Skeleton for better loading state
              <div className="flex items-center space-x-2">
@@ -203,7 +226,8 @@ export function SiteHeader({ className, ...props }: SiteHeaderProps) {
             </DropdownMenu>
           ) : (
             // Use space-x-2 for consistent spacing
-            <div className="flex items-center space-x-2">
+             // Hide Login/Signup on small screens as they are in MobileNav sheet
+            <div className="hidden sm:flex items-center space-x-2">
               <Link href="/auth/login" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-md hover:bg-accent">
                 Login
               </Link>
@@ -217,3 +241,4 @@ export function SiteHeader({ className, ...props }: SiteHeaderProps) {
     </header>
   );
 }
+```
