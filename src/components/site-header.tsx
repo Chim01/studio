@@ -1,9 +1,9 @@
 // src/components/site-header.tsx
 "use client"; // Add this directive
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react"; // Added useRef
 import Link from "next/link";
-import { useRouter } from 'next/navigation'; // Import useRouter
+import { useRouter, usePathname } from 'next/navigation'; // Import useRouter and usePathname
 import { onAuthStateChanged, User, AuthError } from 'firebase/auth'; // Import User and AuthError type
 import { auth } from '@/lib/firebase'; // Import auth instance
 import { signOutUser, handleRedirectResult } from '@/services/auth'; // Import signOutUser & handleRedirectResult function
@@ -14,6 +14,7 @@ import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button"; // Import Button for Logout
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"; // Import Avatar
+import { Skeleton } from "@/components/ui/skeleton"; // Import Skeleton for loading state
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,9 +29,13 @@ interface SiteHeaderProps extends React.HTMLAttributes<HTMLElement> {}
 
 export function SiteHeader({ className, ...props }: SiteHeaderProps) {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true); // Start loading until auth state and redirect check are done
+  // Separate loading states for initial auth check and redirect check
+  const [authLoading, setAuthLoading] = useState(true);
+  const [redirectLoading, setRedirectLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname(); // Get current pathname
   const { toast } = useToast();
+  const processingRedirect = useRef(false); // Ref to prevent double processing
 
    // Get user's initials for Avatar Fallback
   const getUserInitials = (name: string | null | undefined): string => {
@@ -45,53 +50,82 @@ export function SiteHeader({ className, ...props }: SiteHeaderProps) {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       console.log("Auth state changed:", currentUser?.displayName);
       setUser(currentUser);
-      // We might still be loading if getRedirectResult hasn't finished yet
-      // setLoading(false); // Move setLoading(false) to after getRedirectResult finishes
+      setAuthLoading(false); // Auth state known, set loading to false
+    }, (error) => {
+      // Handle potential errors during listener setup or execution
+      console.error("Auth state listener error:", error);
+      setUser(null); // Assume logged out on listener error
+      setAuthLoading(false);
     });
 
-    // Check for redirect result when the component mounts
+    // Check for redirect result *only once* when the component mounts
     const checkRedirect = async () => {
-      setLoading(true); // Ensure loading is true while checking
+       if (!auth || processingRedirect.current) {
+            // If auth isn't ready yet, or redirect is already being checked, bail
+            setRedirectLoading(false); // Set redirect loading false if auth isn't ready
+            return;
+        }
+        processingRedirect.current = true; // Mark as processing
+
+      console.log("Checking for Google Sign-In redirect result...");
       try {
         const userCredential = await handleRedirectResult();
         if (userCredential) {
           // User signed in successfully via redirect
+          console.log("Redirect sign-in successful, user:", userCredential.user.displayName);
           toast({
             title: "Login Successful",
             description: `Welcome back, ${userCredential.user.displayName}!`,
           });
-           // setUser(userCredential.user); // Auth state listener should handle this, but setting it here can be faster UI update
-           // Redirect only if just logged in via redirect and not already on profile
-           if (window.location.pathname !== '/profile') {
+           // Auth listener should update the user state, but we can update it here too for faster UI
+           setUser(userCredential.user);
+           // Redirect to profile *only if* the user just logged in via redirect AND isn't already there
+           if (pathname !== '/profile') {
+                console.log("Redirecting to profile page...");
                 router.push('/profile');
-            }
+           }
+        } else {
+             console.log("No redirect result found on this page load.");
         }
-        // If userCredential is null, it means no redirect sign-in happened, or user is already signed in.
-        // Auth state listener will handle the case where user is already signed in.
       } catch (error) {
         const authError = error as AuthError;
-        console.error('Google Sign-In Redirect Failed:', authError);
+        console.error('Google Sign-In Redirect Processing Failed:', authError.code, authError.message);
         let description = "An error occurred during Google Sign-In.";
          if (authError.code === 'auth/account-exists-with-different-credential') {
            description = "An account already exists with the same email address but different sign-in credentials. Try signing in with the original method.";
+         } else if (authError.code === 'auth/credential-already-in-use') {
+             description = "This Google account is already linked to another user.";
          } else if (authError.message) {
-            description = authError.message;
+            description = authError.message; // Use Firebase's message if available
         }
         toast({
           title: "Google Sign-In Failed",
           description: description,
           variant: "destructive",
         });
+        // Ensure user state is cleared if redirect login failed
+        setUser(null);
       } finally {
-         setLoading(false); // Set loading to false after checking redirect and auth state listener potentially ran
+         setRedirectLoading(false); // Redirect check finished
+         // processingRedirect.current = false; // Reset after processing attempt
       }
     };
 
-    checkRedirect();
+    // We need to wait briefly for Firebase auth to potentially initialize
+    // before checking the redirect result.
+    // A better approach might involve a global app state/provider for auth readiness.
+    const timer = setTimeout(() => {
+        checkRedirect();
+    }, 500); // Adjust delay if needed, or use a more robust state management
 
-    // Cleanup subscription on unmount
-    return () => unsubscribe();
-  }, [router, toast]); // Add router and toast as dependencies
+
+    // Cleanup: unsubscribe listener and clear timer
+    return () => {
+      unsubscribe();
+      clearTimeout(timer);
+      processingRedirect.current = false; // Reset on unmount just in case
+    }
+  }, [router, toast, pathname]); // Add pathname to dependencies
 
 
   const handleLogout = async () => {
@@ -101,30 +135,39 @@ export function SiteHeader({ className, ...props }: SiteHeaderProps) {
         title: "Logged Out",
         description: "You have been successfully logged out.",
       });
+      setUser(null); // Immediately update UI state
       router.push('/'); // Redirect to home page after logout
     } catch (error) {
       console.error("Logout failed:", error);
+       const authError = error as AuthError;
       toast({
         title: "Logout Failed",
-        description: "An error occurred during logout. Please try again.",
+        description: authError.message || "An error occurred during logout. Please try again.",
         variant: "destructive",
       });
     }
   };
+
+  // Combined loading state
+  const isLoading = authLoading || redirectLoading;
 
   return (
     <header className={cn("sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60", className)} {...props}>
       <div className="container flex h-16 items-center space-x-4 sm:justify-between sm:space-x-0 pl-4 md:pl-8"> {/* Added padding left */}
         <MainNav items={siteConfig.mainNav} />
         <MobileNav items={siteConfig.mainNav} />
-        <div className="flex items-center gap-4 ml-auto"> {/* Use ml-auto to push to the right */}
-          {loading ? (
-             <div className="h-8 w-20 animate-pulse rounded-md bg-muted"></div> // Simple loader
+        <div className="flex flex-1 items-center justify-end space-x-4"> {/* Adjusted for right alignment */}
+          {isLoading ? (
+             // Use Skeleton for better loading state
+             <div className="flex items-center space-x-2">
+                <Skeleton className="h-8 w-8 rounded-full" />
+                <Skeleton className="h-6 w-20 rounded-md" />
+             </div>
           ) : user ? (
              <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <Avatar className="h-8 w-8">
+                 <Button variant="ghost" className="relative h-9 w-9 rounded-full"> {/* Slightly larger touch target */}
+                    <Avatar className="h-9 w-9">
                     <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} />
                     <AvatarFallback>{getUserInitials(user.displayName)}</AvatarFallback>
                     </Avatar>
@@ -146,7 +189,12 @@ export function SiteHeader({ className, ...props }: SiteHeaderProps) {
                  <DropdownMenuItem asChild>
                    <Link href="/booking">Booking</Link>
                 </DropdownMenuItem>
-                 {/* Add other relevant links */}
+                 {/* Add Admin link conditionally if needed based on user role/ID */}
+                  {/* {user.uid === 'YOUR_ADMIN_USER_ID' && (
+                     <DropdownMenuItem asChild>
+                       <Link href="/admin">Admin</Link>
+                    </DropdownMenuItem>
+                  )} */}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
                   Log out
@@ -154,14 +202,15 @@ export function SiteHeader({ className, ...props }: SiteHeaderProps) {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <>
-              <Link href="/auth/login" className="text-sm font-medium text-muted-foreground hover:text-foreground">
+            // Use space-x-2 for consistent spacing
+            <div className="flex items-center space-x-2">
+              <Link href="/auth/login" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-md hover:bg-accent">
                 Login
               </Link>
               <Link href="/auth/signup">
-                 <Button size="sm">Sign Up</Button>
+                 <Button size="sm" variant="default">Sign Up</Button>
               </Link>
-            </>
+            </div>
           )}
         </div>
       </div>

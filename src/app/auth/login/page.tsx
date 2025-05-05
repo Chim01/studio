@@ -12,24 +12,50 @@ import { GoogleIcon } from '@/components/icons/google-icon';
 import { useToast } from "@/hooks/use-toast";
 import { signInWithGoogle } from '@/services/auth'; // Import the auth service
 import type { AuthError } from 'firebase/auth'; // Import AuthError type
+import { auth } from '@/lib/firebase'; // Import auth to check initialization
 
 const LoginPage = () => {
   const { toast } = useToast();
   const router = useRouter(); // Initialize router
 
   const handleGoogleSignIn = async () => {
+    // Check if Firebase Auth is initialized
+    if (!auth) {
+       toast({
+        title: "Authentication Error",
+        description: "Authentication service is not available. Please try again later.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       console.log('Attempting Google Sign-In via redirect...');
       await signInWithGoogle();
       // No userCredential or toast here, the result is handled after redirect in SiteHeader
       // The user will be redirected to Google and then back to the app.
+      // Add a toast to inform the user they are being redirected.
+       toast({
+          title: "Redirecting to Google",
+          description: "Please complete the sign-in with Google.",
+        });
     } catch (error) {
       // Catch errors during the *initiation* of the redirect only
       const authError = error as AuthError;
       console.error('Google Sign-In Initiation Failed:', authError);
+
+      let description = "Could not start the Google Sign-In process. Please check your connection and try again.";
+      // Provide more specific feedback if possible
+       if (authError.code === 'auth/network-request-failed') {
+           description = "Network error. Please check your internet connection.";
+       } else if (error instanceof Error && error.message === "Authentication service not ready.") {
+           description = "Authentication service is not available. Please try again later.";
+       }
+       // Add other specific error codes if needed
+
       toast({
         title: "Google Sign-In Failed",
-        description: "Could not start the Google Sign-In process. Please check your connection and try again.",
+        description: description,
         variant: "destructive",
       });
     }
