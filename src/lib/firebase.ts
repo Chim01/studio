@@ -26,13 +26,13 @@ import { getFirestore } from "firebase/firestore"; // Add if you need Firestore
 // ---
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyAcb4GdbSuAnB7CHxqw-kkH2wl8Uo4RZHk", // <<< CHECK THIS ENV VARIABLE in .env
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID // Optional
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyDOGyE4fXg9H3p1cu_4nutedOJkxhvl4ZY", // <<< CHECK THIS ENV VARIABLE in .env
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "campus-cruiser-nkb4g.firebaseapp.com",
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "campus-cruiser-nkb4g",
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "campus-cruiser-nkb4g.firebasestorage.app",
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "726367933776",
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:726367933776:web:5d1dbe86c8dba4f629c855",
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "G-EPF5MBFZVH" // Optional
 };
 
 // Client-side logging to help diagnose configuration issues
