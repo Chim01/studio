@@ -10,36 +10,41 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { GoogleIcon } from '@/components/icons/google-icon';
 import { useToast } from "@/hooks/use-toast";
-import { signInWithGoogle } from '@/services/auth'; // Import the auth service
+import { signInWithGoogle, signUpWithEmail } from '@/services/auth'; // Import the auth service
 import type { AuthError } from 'firebase/auth'; // Import AuthError type
 import { auth } from '@/lib/firebase'; // Import auth to check initialization
 
 
 const SignupPage = () => {
-   const { toast } = useToast();
-   const router = useRouter(); // Initialize router
-   const [isGoogleLoading, setIsGoogleLoading] = React.useState(false); // Add loading state for Google button
+  const { toast } = useToast();
+  const router = useRouter(); // Initialize router
+  const [isGoogleLoading, setIsGoogleLoading] = React.useState(false); // Add loading state for Google button
+  const [name, setName] = React.useState('');
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [isEmailLoading, setIsEmailLoading] = React.useState(false);
+
 
   const handleGoogleSignUp = async () => {
-     setIsGoogleLoading(true); // Set loading state immediately
-     // Show toast immediately to indicate action is starting
-     toast({
-        title: "Redirecting to Google",
-        description: "Please complete the sign-up with Google.",
-      });
+    setIsGoogleLoading(true); // Set loading state immediately
+    // Show toast immediately to indicate action is starting
+    toast({
+      title: "Redirecting to Google",
+      description: "Please complete the sign-up with Google.",
+    });
 
     // Check if Firebase Auth is initialized
     if (!auth) {
-       toast({
+      toast({
         title: "Authentication Error",
         description: "Authentication service is not available. Please try again later.",
         variant: "destructive",
       });
-       setIsGoogleLoading(false); // Reset loading state on error
+      setIsGoogleLoading(false); // Reset loading state on error
       return;
     }
 
-     try {
+    try {
       console.log('Attempting Google Sign-Up via redirect...');
       await signInWithGoogle(); // Use the same function for signup/login redirect
       // No userCredential or success toast here, the result is handled after redirect in SiteHeader
@@ -52,30 +57,59 @@ const SignupPage = () => {
 
       let description = "Could not start the Google Sign-Up process. Please check your connection and try again.";
       // Provide more specific feedback if possible
-       if (authError.code === 'auth/network-request-failed') {
-           description = "Network error. Please check your internet connection.";
-       } else if (error instanceof Error && error.message === "Authentication service not ready.") {
-           description = "Authentication service is not available. Please try again later.";
-       }
-       // Add other specific error codes if needed
+      if (authError.code === 'auth/network-request-failed') {
+        description = "Network error. Please check your internet connection.";
+      } else if (error instanceof Error && error.message === "Authentication service not ready.") {
+        description = "Authentication service is not available. Please try again later.";
+      }
+      // Add other specific error codes if needed
 
       toast({
         title: "Google Sign-Up Failed",
         description: description,
         variant: "destructive",
       });
-       setIsGoogleLoading(false); // Reset loading state on error
+      setIsGoogleLoading(false); // Reset loading state on error
     }
   };
 
-   const handleEmailSignUp = () => {
-    // TODO: Implement Firebase Email/Password Sign-Up logic
-    console.log('Attempting Email Sign-Up...');
-     toast({
-      title: "Email Sign-Up",
-      description: "Email sign-up functionality not yet implemented.",
-      variant: "destructive",
-    });
+  const handleEmailSignUp = async () => {
+    setIsEmailLoading(true);
+    if (!name || !email || !password) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter your name, email, and password.",
+        variant: "destructive",
+      });
+      setIsEmailLoading(false);
+      return;
+    }
+
+    try {
+      await signUpWithEmail(email, password, name);
+      toast({
+        title: "Sign-Up Successful",
+        description: "Your account has been created. Please log in.",
+      });
+      router.push('/auth/login');
+    } catch (error) {
+      const authError = error as AuthError;
+      let description = "Could not create an account. Please try again.";
+      if (authError.code === 'auth/email-already-in-use') {
+        description = "An account with this email already exists.";
+      } else if (authError.code === 'auth/invalid-email') {
+        description = "Invalid email address.";
+      } else if (authError.code === 'auth/weak-password') {
+        description = "Weak password. Please use a stronger password.";
+      }
+      toast({
+        title: "Sign-Up Failed",
+        description: description,
+        variant: "destructive",
+      });
+    } finally {
+      setIsEmailLoading(false);
+    }
   };
 
 
@@ -91,20 +125,22 @@ const SignupPage = () => {
         <CardContent className="grid gap-4">
           <div className="grid gap-2">
             <Label htmlFor="name">Name</Label>
-            <Input id="name" placeholder="Your name" />
+            <Input id="name" placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <div className="grid gap-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="your.email@example.com" />
+            <Input id="email" type="email" placeholder="your.email@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div className="grid gap-2">
             <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" placeholder="Create a password" />
+            <Input id="password" type="password" placeholder="Create a password" value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
-           <Button className="w-full" onClick={handleEmailSignUp}>Sign Up</Button>
+          <Button className="w-full" onClick={handleEmailSignUp} disabled={isEmailLoading}>
+            {isEmailLoading ? 'Signing up...' : 'Sign Up'}
+          </Button>
 
-           {/* Separator */}
-           <div className="relative my-4">
+          {/* Separator */}
+          <div className="relative my-4">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t" />
             </div>
@@ -117,12 +153,12 @@ const SignupPage = () => {
 
           {/* Google Sign-Up Button */}
           <Button variant="outline" className="w-full" onClick={handleGoogleSignUp} disabled={isGoogleLoading}>
-             <GoogleIcon className="mr-2 h-4 w-4" /> {/* Added icon */}
-             {isGoogleLoading ? 'Redirecting...' : 'Sign up with Google'}
+            <GoogleIcon className="mr-2 h-4 w-4" /> {/* Added icon */}
+            {isGoogleLoading ? 'Redirecting...' : 'Sign up with Google'}
           </Button>
 
         </CardContent>
-         {/* Optional Footer */}
+        {/* Optional Footer */}
         {/* <CardFooter>
           <p className="text-xs text-muted-foreground">
             By signing up, you agree to our Terms of Service.

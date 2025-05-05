@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { GoogleIcon } from '@/components/icons/google-icon';
 import { useToast } from "@/hooks/use-toast";
-import { signInWithGoogle } from '@/services/auth'; // Import the auth service
+import { signInWithGoogle, signInWithEmail } from '@/services/auth'; // Import the auth service
 import type { AuthError } from 'firebase/auth'; // Import AuthError type
 import { auth } from '@/lib/firebase'; // Import auth to check initialization
 
@@ -18,18 +18,22 @@ const LoginPage = () => {
   const { toast } = useToast();
   const router = useRouter(); // Initialize router
   const [isGoogleLoading, setIsGoogleLoading] = React.useState(false); // Add loading state for Google button
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [isEmailLoading, setIsEmailLoading] = React.useState(false);
+
 
   const handleGoogleSignIn = async () => {
-     setIsGoogleLoading(true); // Set loading state immediately
-     // Show toast immediately to indicate action is starting
-     toast({
-        title: "Redirecting to Google",
-        description: "Please complete the sign-in with Google.",
-      });
+    setIsGoogleLoading(true); // Set loading state immediately
+    // Show toast immediately to indicate action is starting
+    toast({
+      title: "Redirecting to Google",
+      description: "Please complete the sign-in with Google.",
+    });
 
     // Check if Firebase Auth is initialized
     if (!auth) {
-       toast({
+      toast({
         title: "Authentication Error",
         description: "Authentication service is not available. Please try again later.",
         variant: "destructive",
@@ -52,30 +56,57 @@ const LoginPage = () => {
 
       let description = "Could not start the Google Sign-In process. Please check your connection and try again.";
       // Provide more specific feedback if possible
-       if (authError.code === 'auth/network-request-failed') {
-           description = "Network error. Please check your internet connection.";
-       } else if (error instanceof Error && error.message === "Authentication service not ready.") {
-           description = "Authentication service is not available. Please try again later.";
-       }
-       // Add other specific error codes if needed
+      if (authError.code === 'auth/network-request-failed') {
+        description = "Network error. Please check your internet connection.";
+      } else if (error instanceof Error && error.message === "Authentication service not ready.") {
+        description = "Authentication service is not available. Please try again later.";
+      }
+      // Add other specific error codes if needed
 
       toast({
         title: "Google Sign-In Failed",
         description: description,
         variant: "destructive",
       });
-       setIsGoogleLoading(false); // Reset loading state on error
+      setIsGoogleLoading(false); // Reset loading state on error
     }
   };
 
-  const handleEmailLogin = () => {
-    // TODO: Implement Firebase Email/Password Login logic
-    console.log('Attempting Email Login...');
-    toast({
-      title: "Email Login",
-      description: "Email login functionality not yet implemented.",
-      variant: "destructive",
-    });
+  const handleEmailLogin = async () => {
+    setIsEmailLoading(true);
+    if (!email || !password) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter both email and password.",
+        variant: "destructive",
+      });
+      setIsEmailLoading(false);
+      return;
+    }
+
+    try {
+      await signInWithEmail(email, password);
+      toast({
+        title: "Login Successful",
+        description: "You have successfully logged in.",
+      });
+      router.push('/profile');
+    } catch (error) {
+      const authError = error as AuthError;
+      let description = "Invalid credentials. Please check your email and password.";
+      if (authError.code === 'auth/user-not-found') {
+        description = "No user found with that email.";
+      } else if (authError.code === 'auth/wrong-password') {
+        description = "Incorrect password.";
+      }
+      toast({
+        title: "Login Failed",
+        description: description,
+        variant: "destructive",
+      });
+    } finally {
+      setIsEmailLoading(false);
+    }
   };
 
 
@@ -91,16 +122,18 @@ const LoginPage = () => {
         <CardContent className="grid gap-4">
           <div className="grid gap-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="your.email@example.com" />
+            <Input id="email" type="email" placeholder="your.email@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div className="grid gap-2">
             <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" placeholder="Your password" />
+            <Input id="password" type="password" placeholder="Your password" value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
-           <Button className="w-full" onClick={handleEmailLogin}>Login</Button>
+          <Button className="w-full" onClick={handleEmailLogin} disabled={isEmailLoading}>
+            {isEmailLoading ? 'Logging in...' : 'Login'}
+          </Button>
 
-           {/* Separator */}
-           <div className="relative my-4">
+          {/* Separator */}
+          <div className="relative my-4">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t" />
             </div>
@@ -111,10 +144,10 @@ const LoginPage = () => {
             </div>
           </div>
 
-           {/* Google Sign-In Button */}
+          {/* Google Sign-In Button */}
           <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isGoogleLoading}>
-             <GoogleIcon className="mr-2 h-4 w-4" /> {/* Added icon */}
-             {isGoogleLoading ? 'Redirecting...' : 'Sign in with Google'}
+            <GoogleIcon className="mr-2 h-4 w-4" /> {/* Added icon */}
+            {isGoogleLoading ? 'Redirecting...' : 'Sign in with Google'}
           </Button>
 
         </CardContent>
