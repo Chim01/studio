@@ -1,6 +1,10 @@
+// src/app/booking/page.tsx
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { onAuthStateChanged, User } from 'firebase/auth';
+import { auth } from '@/lib/firebase'; // Import Firebase auth instance
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -10,10 +14,10 @@ import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns"; // Import format function
+import { format } from "date-fns";
+import BookingLoading from './loading'; // Import the loading component
 
 // Combined list of Nigerian locations (States, Capitals, Cities, Universities)
-// Note: This list is extensive but not exhaustive. Consider using a searchable dropdown/API for a better UX in a real app.
 const nigerianLocations = [
   // States & Capitals
   "Abia State", "Umuahia, Abia State",
@@ -213,37 +217,86 @@ const nigerianLocations = [
 ];
 
 const BookingPage = () => {
-  const [origin, setOrigin] = React.useState('');
-  const [destination, setDestination] = React.useState('');
-  const [date, setDate] = React.useState<Date | undefined>(undefined);
-  const { toast } = useToast()
+  const [origin, setOrigin] = useState('');
+  const [destination, setDestination] = useState('');
+  const [date, setDate] = useState<Date | undefined>(undefined);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true); // State to track auth loading
+  const router = useRouter();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    // Check authentication status
+     if (!auth) {
+        console.warn("Auth service not ready in booking page.");
+        setLoading(false); // Stop loading if auth is not ready
+        router.push('/auth/login'); // Redirect if auth isn't even initialized
+        return;
+      }
+
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        setLoading(false); // User is logged in, stop loading
+      } else {
+        // User is not logged in, redirect to login page
+        setUser(null);
+        setLoading(false); // Authentication check complete, stop loading
+        toast({
+            title: "Authentication Required",
+            description: "Please log in to book a ride.",
+            variant: "destructive",
+         });
+        router.push('/auth/login');
+      }
+    }, (error) => {
+         console.error("Auth state error in booking:", error);
+         setLoading(false); // Stop loading on error
+         router.push('/auth/login'); // Redirect on error
+    });
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, [router, toast]); // Add router and toast to dependency array
 
   const handleBooking = (e: React.FormEvent) => {
     e.preventDefault(); // Prevent default form submission
     if (!origin || !destination || !date) {
-       toast({
+      toast({
         variant: "destructive",
         title: "Missing Information",
         description: "Please fill in origin, destination, and date.",
-      })
+      });
       return;
     }
 
     // TODO: Implement actual booking logic (e.g., call an API)
     // Example: send booking data to backend
-    // await createBooking({ userId: '...', origin, destination, date });
+    // await createBooking({ userId: user?.uid, origin, destination, date });
 
-     toast({
-        title: "Booking Request Submitted",
-        description: `Ride from ${origin} to ${destination} on ${date ? format(date, 'PPP') : ''} requested. Check your profile for confirmation.`,
-      })
-    console.log('Booking details:', { origin, destination, date });
+    toast({
+      title: "Booking Request Submitted",
+      description: `Ride from ${origin} to ${destination} on ${date ? format(date, 'PPP') : ''} requested. Check your profile for confirmation.`,
+    });
+    console.log('Booking details:', { userId: user?.uid, origin, destination, date });
     // Optionally reset form fields after successful submission
     // setOrigin('');
     // setDestination('');
     // setDate(undefined);
   };
 
+  // Show loading indicator while checking auth status
+  if (loading) {
+    return <BookingLoading />; // Render the loading component
+  }
+
+  // If user is null after loading, redirect would have happened, but return null briefly
+  if (!user) {
+     return null; // Or a minimal message, though redirect should handle it
+  }
+
+
+  // Render booking form only if loading is false and user exists
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-128px)] py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-background to-secondary/30">
       <Card className="w-full max-w-lg shadow-lg rounded-xl">
@@ -264,7 +317,7 @@ const BookingPage = () => {
                 onChange={(e) => setOrigin(e.target.value)}
                 placeholder="Enter or select starting point"
                 required
-                className="text-base md:text-sm" // Ensure consistent text size
+                className="text-base md:text-sm" // Consistent text size
               />
               <datalist id="origin-list">
                 {nigerianLocations.map((location, index) => (
@@ -281,7 +334,7 @@ const BookingPage = () => {
                 onChange={(e) => setDestination(e.target.value)}
                 placeholder="Enter or select destination"
                 required
-                className="text-base md:text-sm" // Ensure consistent text size
+                className="text-base md:text-sm" // Consistent text size
               />
               <datalist id="destination-list">
                 {nigerianLocations.map((location, index) => (
@@ -316,9 +369,9 @@ const BookingPage = () => {
               </Popover>
             </div>
             {/* Time of Departure info - Set by Admin */}
-             <div className="text-sm text-muted-foreground text-center px-2 py-1 bg-muted rounded-md">
-                Departure time will be assigned by the administrator.
-             </div>
+            <div className="text-sm text-muted-foreground text-center px-2 py-1 bg-muted rounded-md">
+              Departure time will be assigned by the administrator.
+            </div>
 
             <Button type="submit" className="w-full mt-2 text-base font-semibold py-3" size="lg">Request Ride</Button>
           </form>
