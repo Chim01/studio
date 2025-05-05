@@ -9,9 +9,12 @@ import { getFirestore } from "firebase/firestore"; // Add if you need Firestore
 //    This value comes from your Firebase project settings:
 //    Project Settings > General > Your apps > Web app > SDK setup and configuration > Config > apiKey.
 // 2. Verify other `NEXT_PUBLIC_FIREBASE_*` variables are also correct in .env.
-// 3. In your Firebase Console (Authentication > Settings > Authorized domains), ensure your
-//    application's domain (e.g., localhost, your-deployment-url.com, *.cloudworkstations.dev) is added.
-//    THIS IS CRUCIAL FOR REDIRECT-BASED AUTH. Check for typos.
+// 3. ***AUTH/UNAUTHORIZED-DOMAIN ERROR***: In your Firebase Console (Authentication > Settings > Authorized domains),
+//    ensure your application's domain is added. This includes:
+//      - `localhost` (if testing locally)
+//      - The specific domain provided by your development environment (e.g., `*.cloudworkstations.dev`, `*.gitpod.io`)
+//      - Your production deployment domain (e.g., `your-app.vercel.app`, `your-custom-domain.com`)
+//    THIS IS CRUCIAL FOR REDIRECT-BASED AUTH like Google Sign-In. Check for typos.
 // 4. In your Firebase Console (Authentication > Sign-in method), ensure the "Google" provider is enabled.
 // 5. In Google Cloud Console (APIs & Services > Credentials > Select your API Key):
 //    - Check 'Application restrictions'. If 'HTTP referrers' is selected, ensure your app's domains
@@ -23,7 +26,7 @@ import { getFirestore } from "firebase/firestore"; // Add if you need Firestore
 // ---
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyAcb4GdbSuAnB7CHxqw-kkH2wl8Uo4RZHk_invalid", // <<< CHECK THIS ENV VARIABLE in .env
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyAcb4GdbSuAnB7CHxqw-kkH2wl8Uo4RZHk", // <<< CHECK THIS ENV VARIABLE in .env
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
@@ -36,12 +39,13 @@ const firebaseConfig = {
 if (typeof window !== 'undefined') {
     console.log("--- Firebase Config Check (src/lib/firebase.ts) ---");
     // Log the key partially masked for security, but confirm it's loaded.
-    const apiKeyLoaded = !!firebaseConfig.apiKey && firebaseConfig.apiKey !== "AIzaSyAcb4GdbSuAnB7CHxqw-kkH2wl8Uo4RZHk_invalid";
+    const apiKeyLoaded = !!firebaseConfig.apiKey && firebaseConfig.apiKey !== "AIzaSyAcb4GdbSuAnB7CHxqw-kkH2wl8Uo4RZHk_invalid"; // Check against placeholder
     const maskedApiKey = apiKeyLoaded ? `${firebaseConfig.apiKey!.substring(0, 4)}...${firebaseConfig.apiKey!.substring(firebaseConfig.apiKey!.length - 4)}` : 'Not Loaded/Invalid/Placeholder';
     console.log(`API Key Loaded: ${apiKeyLoaded}`);
     console.log(`API Key (Masked): ${maskedApiKey}`); // Log masked key
     console.log(`Auth Domain: ${firebaseConfig.authDomain || 'Not Loaded/Undefined'}`);
     console.log(`Project ID: ${firebaseConfig.projectId || 'Not Loaded/Undefined'}`);
+    console.log("Current Location Origin:", window.location.origin); // Log the origin for easy comparison
     console.log("--------------------------------------------------");
 
     if (!apiKeyLoaded) {
@@ -59,6 +63,20 @@ if (typeof window !== 'undefined') {
             "Check your .env file and Firebase project settings."
         );
     }
+    // Add a specific warning for unauthorized domain based on console error
+    if (console && console.error && typeof console.error === 'function') {
+        const originalError = console.error;
+        console.error = (...args) => {
+            if (args.some(arg => typeof arg === 'string' && arg.includes('auth/unauthorized-domain'))) {
+                 originalError(
+                    ...args,
+                    "\n\n🚨 **FIX:** Add the current domain (`" + window.location.hostname + "`) to your Firebase project's Authentication > Settings > Authorized domains list. See comments in `src/lib/firebase.ts` for details. Ensure `localhost` is also added if testing locally.\n"
+                 );
+            } else {
+                originalError(...args);
+            }
+        };
+    }
 }
 
 
@@ -67,7 +85,8 @@ let app: ReturnType<typeof initializeApp> | null = null; // Explicitly type 'app
 // Check if Firebase has already been initialized
 if (!getApps().length) {
     // Ensure config has essential values before initializing
-    if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "AIzaSyAcb4GdbSuAnB7CHxqw-kkH2wl8Uo4RZHk_invalid" && firebaseConfig.authDomain && firebaseConfig.projectId) {
+    // Use the actual key value directly here, removed placeholder check as it's hardcoded now
+    if (firebaseConfig.apiKey && firebaseConfig.authDomain && firebaseConfig.projectId) {
          try {
             app = initializeApp(firebaseConfig);
             console.log("Firebase initialized successfully.");
@@ -83,7 +102,7 @@ if (!getApps().length) {
             }
         }
     } else {
-         console.error("Firebase initialization skipped due to missing/invalid critical configuration (API Key, Auth Domain, or Project ID). Check .env file.");
+         console.error("Firebase initialization skipped due to missing critical configuration (Auth Domain, or Project ID). Check .env file.");
          app = null;
     }
 

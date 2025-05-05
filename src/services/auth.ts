@@ -25,7 +25,10 @@ export const signInWithGoogle = async (): Promise<void> => {
     throw new Error("Authentication service not ready.");
   }
   try {
-    // signInWithRedirect doesn't return a UserCredential directly, it starts the redirect.
+    // ***AUTH/UNAUTHORIZED-DOMAIN ERROR?***
+    // If you get this error, make sure the domain you are running the app on
+    // (e.g., localhost, *.cloudworkstations.dev, your deployed domain)
+    // is added to your Firebase project's Authentication > Settings > Authorized domains list.
     await signInWithRedirect(auth, googleProvider);
     console.log("Google Sign-In redirect initiated.");
     // The result (UserCredential or error) is obtained via getRedirectResult() AFTER the redirect.
@@ -38,7 +41,7 @@ export const signInWithGoogle = async (): Promise<void> => {
     // Specific check for invalid API key
     if (authError.code === 'auth/api-key-not-valid' || authError.message.includes('api-key-not-valid')) {
       console.error(
-        "FIREBASE AUTH ERROR: Invalid API Key. \n" +
+        "FIREBASE AUTH ERROR (Initiation): Invalid API Key. \n" +
         "Potential Causes & Solutions: \n" +
         "1. Check NEXT_PUBLIC_FIREBASE_API_KEY in your .env file. Is it correct? Is it the *web* API key? \n" +
         "2. Did you restart the Next.js server (npm run dev) after changing .env? \n" +
@@ -50,6 +53,14 @@ export const signInWithGoogle = async (): Promise<void> => {
         "6. Ensure the `firebaseConfig` in `src/lib/firebase.ts` is correctly loading the environment variable."
       );
     }
+    // Check for unauthorized domain error
+     if (authError.code === 'auth/unauthorized-domain') {
+       console.error(
+         "FIREBASE AUTH ERROR (Initiation): Unauthorized Domain. \n" +
+         "FIX: Add the current domain (`" + window.location.hostname + "`) to your Firebase project's Authentication > Settings > Authorized domains list. See comments in `src/lib/firebase.ts` for more details."
+       );
+     }
+
 
     // You might want to map other specific error codes to user-friendly messages here.
     throw authError; // Re-throw the error to be caught by the caller (e.g., UI)
@@ -101,7 +112,7 @@ export const handleRedirectResult = async (): Promise<UserCredential | null> => 
       return result;
     }
     // No redirect result found (e.g., user navigated directly to the page, or was already signed in).
-    console.log("No Google Sign-In redirect result found.");
+    // console.log("No Google Sign-In redirect result found."); // Reduce noise, only log if successful
     return null;
   } catch (error) {
     const authError = error as AuthError;
@@ -112,9 +123,16 @@ export const handleRedirectResult = async (): Promise<UserCredential | null> => 
     // Specific check for invalid API key during redirect result processing
     if (authError.code === 'auth/api-key-not-valid' || authError.message.includes('api-key-not-valid')) {
       console.error(
-        "FIREBASE AUTH ERROR (Redirect Result): Invalid API Key. See previous initiation error message for debugging steps."
+        "FIREBASE AUTH ERROR (Redirect Result): Invalid API Key. See logs in firebase.ts or auth.ts for debugging steps."
       );
     }
+     // Check for unauthorized domain error during redirect result processing
+     if (authError.code === 'auth/unauthorized-domain') {
+       console.error(
+         "FIREBASE AUTH ERROR (Redirect Result): Unauthorized Domain. \n" +
+         "FIX: Ensure the domain (`" + window.location.hostname + "`) is added to your Firebase project's Authentication > Settings > Authorized domains list."
+       );
+     }
 
     // Optionally provide more specific user feedback based on authError.code
     // Example:
@@ -152,6 +170,14 @@ export const signInWithEmail = async (email: string, password: string): Promise<
              "FIREBASE AUTH ERROR (Email Login): Invalid API Key. See console logs in site-header or auth.ts for debugging steps."
          );
      }
+       // Check for unauthorized domain error during email login
+     if (authError.code === 'auth/unauthorized-domain') {
+       console.error(
+         "FIREBASE AUTH ERROR (Email Login): Unauthorized Domain. \n" +
+         "FIX: Ensure the domain (`" + window.location.hostname + "`) is added to your Firebase project's Authentication > Settings > Authorized domains list."
+       );
+     }
+
 
     throw authError;
   }
@@ -199,6 +225,13 @@ export const signUpWithEmail = async (email: string, password: string, displayNa
         " 5. Ensure the `firebaseConfig` in `src/lib/firebase.ts` is correctly using the environment variable."
       );
     }
+      // Check for unauthorized domain error during signup
+     if (authError.code === 'auth/unauthorized-domain') {
+       console.error(
+         "FIREBASE AUTH ERROR (Signup): Unauthorized Domain. \n" +
+         "FIX: Ensure the domain (`" + window.location.hostname + "`) is added to your Firebase project's Authentication > Settings > Authorized domains list."
+       );
+     }
     console.error("Email Sign-Up Error:", authError.code, authError.message);
     throw authError;
   }
@@ -222,6 +255,13 @@ export const sendPasswordReset = async (email: string): Promise<void> => {
   } catch (error) {
     const authError = error as AuthError;
     console.error("Password Reset Error:", authError.code, authError.message);
+     // Check for unauthorized domain error during password reset
+     if (authError.code === 'auth/unauthorized-domain') {
+       console.error(
+         "FIREBASE AUTH ERROR (Password Reset): Unauthorized Domain. \n" +
+         "FIX: Ensure the domain (`" + window.location.hostname + "`) is added to your Firebase project's Authentication > Settings > Authorized domains list."
+       );
+     }
     // Note: Firebase often throws auth/user-not-found if the email doesn't exist,
     // but for security, we usually don't reveal this to the user.
     // The calling function should handle this by showing a generic success message.
