@@ -27,7 +27,7 @@ export function MainNav({ items }: MainNavProps) {
      // Removed outer div, SiteHeader will handle visibility and layout
     <>
       <Link href="/" className="mr-4 flex items-center space-x-2"> {/* Adjust margin right */}
-         <Bus className="h-6 w-6 text-primary" /> {/* Use primary color */}
+         <Bus className="h-6 w-6 text-yellow-500" /> {/* Use primary color */}
         <span className="font-bold text-lg text-foreground">TecoTransit</span> {/* Ensure text color matches theme */}
       </Link>
 
@@ -57,3 +57,4 @@ export function MainNav({ items }: MainNavProps) {
     </>
   )
 }
+
