@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useRef } from "react"; // Added useRef
 import Link from "next/link";
 import { useRouter, usePathname } from 'next/navigation'; // Import useRouter and usePathname
-import { onAuthStateChanged, User, AuthError } from 'firebase/auth'; // Import User and AuthError type
+import { onAuthStateChanged, User, AuthError, UserCredential } from 'firebase/auth'; // Import User, AuthError, UserCredential type
 import { auth } from '@/lib/firebase'; // Import auth instance
 import { signOutUser, handleRedirectResult } from '@/services/auth'; // Import signOutUser & handleRedirectResult function
 import { useToast } from "@/hooks/use-toast"; // Import useToast
@@ -23,6 +23,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu" // Import Dropdown components
+// Removed unsupported import: import { isNewUser } from 'firebase/auth';
 
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -84,22 +85,38 @@ export function SiteHeader({ className, ...props }: SiteHeaderProps) {
 
       console.log("Checking for Google Sign-In redirect result...");
       try {
-        const userCredential = await handleRedirectResult();
+        const userCredential: UserCredential | null = await handleRedirectResult(); // Ensure type is correct
         if (userCredential) {
-          console.log("Redirect sign-in successful, user:", userCredential.user.displayName);
+           const redirectedUser = userCredential.user;
+           const isNew = userCredential.operationType === 'signUp'; // Use operationType to check if it's a signup
+
+          console.log(`Redirect sign-in successful, user: ${redirectedUser.displayName}, Operation type: ${userCredential.operationType}, Is new user: ${isNew}`);
           toast({
-            title: "Login Successful",
-            description: `Welcome back, ${userCredential.user.displayName}!`,
+            title: isNew ? "Signup Successful" : "Login Successful",
+            description: `Welcome${isNew ? '' : ' back'}, ${redirectedUser.displayName}!`,
           });
            // Auth listener should update user state, but update here for faster UI response
-           setUser(userCredential.user);
+           setUser(redirectedUser);
            // Update admin state based on redirect result user
-           const isAdminUserRedirect = userCredential.user ? ADMIN_UIDS_PLACEHOLDER.includes(userCredential.user.uid) : false;
+           const isAdminUserRedirect = redirectedUser ? ADMIN_UIDS_PLACEHOLDER.includes(redirectedUser.uid) : false;
            setIsAdmin(isAdminUserRedirect);
 
-           // Redirect only if not already on profile page or admin page (if admin)
-           const targetPath = isAdminUserRedirect ? '/admin' : '/profile';
-           if (pathname !== targetPath && pathname !== '/admin') { // Avoid redirect loop if already on admin
+           // Redirect logic:
+           // 1. Admins go to /admin
+           // 2. New users (signup) go to /profile for setup
+           // 3. Existing users (login) go to /profile (or maybe /booking?)
+           let targetPath = '/profile'; // Default for existing users and new users
+           if (isAdminUserRedirect) {
+               targetPath = '/admin';
+           } else if (isNew) {
+               targetPath = '/profile'; // Explicitly set for new users for clarity
+           }
+           // else { // Existing non-admin user
+           //    targetPath = '/profile'; // or maybe '/booking'
+           // }
+
+
+           if (pathname !== targetPath) {
                 console.log(`Redirecting to ${targetPath} page...`);
                 router.push(targetPath);
            }

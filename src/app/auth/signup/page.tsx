@@ -48,6 +48,7 @@ const SignupPage = () => {
     try {
       console.log('Attempting Google Sign-Up via redirect...');
       await signInWithGoogle();
+      // Redirect will be handled by handleRedirectResult in site-header after Google callback
     } catch (error) {
       const authError = error as AuthError;
       console.error('Google Sign-Up Initiation Failed:', authError);
@@ -104,9 +105,10 @@ const SignupPage = () => {
       await signUpWithEmail(email, password, name);
       toast({
         title: "Sign-Up Successful",
-        description: "Your account has been created. Please log in.",
+        description: "Your account has been created. Setting up profile...",
       });
-      router.push('/auth/login');
+      // Redirect to profile page for setup after successful signup
+      router.push('/profile');
     } catch (error) {
       const authError = error as AuthError;
       let description = "Could not create an account. Please try again.";

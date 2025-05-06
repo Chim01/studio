@@ -11,6 +11,7 @@ import {
   updateProfile,
   sendPasswordResetEmail, // Import sendPasswordResetEmail
   GoogleAuthProvider, // Import GoogleAuthProvider type if needed
+  // Removed unsupported import: isNewUser as checkIsNewUser,
 } from 'firebase/auth';
 
 /**
@@ -59,7 +60,7 @@ export const signInWithGoogle = async (): Promise<void> => {
      if (authError.code === 'auth/unauthorized-domain') {
        console.error(
          "FIREBASE AUTH ERROR (Initiation): Unauthorized Domain. \n" +
-         "--> FIX: Add the current domain (`" + (typeof window !== 'undefined' ? window.location.hostname : 'UNKNOWN_HOST') + "`) to your Firebase project's **Authentication > Settings > Authorized domains** list. See comments in `src/lib/firebase.ts` for more details."
+         "--> FIX: Add the current domain (`" + (typeof window !== 'undefined' ? window.location.hostname : 'UNKNOWN_HOST') + "`) to your Firebase project's **Authentication > Settings > Authorized domains** list. See comments in `src/lib/firebase.ts` for details."
        );
      }
 
@@ -108,7 +109,10 @@ export const handleRedirectResult = async (): Promise<UserCredential | null> => 
     if (result) {
       // Successfully signed in via redirect.
       const user = result.user;
-      console.log("Google Sign-In successful via redirect:", user.displayName);
+       const isNew = result.operationType === 'signUp'; // Check if it's a new user signup
+
+      console.log(`Google Sign-In via redirect successful for ${isNew ? 'new user' : 'existing user'}:`, user.displayName);
+
       // You might get an access token here if needed:
       // const credential = GoogleAuthProvider.credentialFromResult(result);
       // const token = credential?.accessToken;
@@ -125,9 +129,9 @@ export const handleRedirectResult = async (): Promise<UserCredential | null> => 
 
     // Specific check for invalid API key during redirect result processing
     if (authError.code === 'auth/api-key-not-valid' || authError.message.includes('api-key-not-valid')) {
-      console.error(
-        "FIREBASE AUTH ERROR (Redirect Result): Invalid API Key. See logs in firebase.ts or auth.ts for debugging steps."
-      );
+            console.error(
+                "FIREBASE AUTH ERROR (Redirect Result): Invalid API Key. See logs in firebase.ts or auth.ts for debugging steps."
+            );
     }
      // Check for unauthorized domain error during redirect result processing
      if (authError.code === 'auth/unauthorized-domain') {
