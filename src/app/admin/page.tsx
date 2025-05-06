@@ -76,8 +76,12 @@ interface Message {
 }
 // --- ---
 
-// Simple Admin Check (Replace with robust role-based access control in production)
-const ADMIN_UIDS = ['YOUR_ADMIN_USER_ID_1', 'YOUR_ADMIN_USER_ID_2']; // Add actual Admin UIDs
+// **SECURITY NOTE:** This is a placeholder for admin UIDs.
+// In a real application, use Firebase Custom Claims or a database role system
+// for secure and scalable role-based access control.
+// Storing admin UIDs directly in the frontend code is NOT secure.
+const ADMIN_UIDS = ['YOUR_ADMIN_USER_ID_1', 'YOUR_ADMIN_USER_ID_2']; // Replace with actual Admin UIDs for testing, but ideally use claims
+
 
 const AdminPage = () => {
   const [paymentId, setPaymentId] = React.useState('');
